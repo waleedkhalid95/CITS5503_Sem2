@@ -49,24 +49,38 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 
 1. Open terminal and update packages:
    - "sudo apt update"
+     - **`sudo`**: Executes the command as a superuser.
+     - **`apt`**: Advanced Package Tool, used for handling package management in Debian-based distributions.
+     - **`update`**: Fetches the package lists from the repositories and updates them to get information on the newest versions of packages and their dependencies.
    - "sudo apt -y upgrade"
+     - **`-y`**: Assumes "yes" as the answer to all prompts and runs non-interactively.
    - <Insert screenshot>
 2. Check Python version and install pip:
-   - "python3 -V"
+   - "python3.8 --version"
+     - **`python3.8`**: Specifies the Python 3.8 version.
+     - **`--version`**: Displays the version of the installed Python.
    - "sudo apt install python3-pip"
+     - **`install`**: Installs the specified package.
+     - **`python3-pip`**: Pip is the package installer for Python.
    - <Insert screenshot>
 
 ### [2] Install awscli
 
 1. Install AWS CLI:
    - "sudo apt install awscli"
+     - **`awscli`**: AWS Command Line Interface, a unified tool to manage AWS services.
 2. Upgrade AWS CLI:
    - "pip3 install awscli --upgrade"
+     - **`pip3`**: Pip for Python 3, used to install Python packages.
+     - **`install`**: Installs the specified package.
+     - **`awscli`**: AWS Command Line Interface package.
+     - **`--upgrade`**: Upgrades the package to the latest version.
 
 ### [3] Configure AWS
 
 1. Configure AWS CLI:
    - "aws configure"
+     - **`configure`**: Starts the AWS configuration process.
    - Enter Access Key ID: "AKIAXD4PI5LY42OCDU4I"
    - Enter Secret Access Key.
    - Default region name: "ap-northeast-3" (as per student ID range).
@@ -76,6 +90,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 
 1. Install boto3:
    - "pip3 install boto3"
+     - **`boto3`**: The Amazon Web Services (AWS) SDK for Python, which allows Python developers to write software that makes use of Amazon services like S3 and EC2.
 
 ## Test the Installed Environment
 
@@ -83,6 +98,9 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 
 1. Test the AWS environment by listing regions:
    - "aws ec2 describe-regions --output table"
+     - **`aws ec2`**: Command to interact with the EC2 service.
+     - **`describe-regions`**: Describes the regions that are available to you.
+     - **`--output table`**: Specifies that the output should be formatted as a table.
    - The output is a table.
    - <Insert screenshot>
 
@@ -90,9 +108,13 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 
 1. Test if Python works by extracting the same table in JSON format:
    - "import boto3"
+     - **`import boto3`**: Imports the boto3 library.
    - "ec2 = boto3.client('ec2')"
+     - **`boto3.client('ec2')`**: Creates a low-level client representing Amazon EC2.
    - "response = ec2.describe_regions()"
+     - **`ec2.describe_regions()`**: Calls the describe_regions method to get a list of regions.
    - "print(response)"
+     - **`print(response)`**: Prints the response.
    - <Insert screenshot>
 
 ### [3] Write a Python script
@@ -109,12 +131,26 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
    - "regions = response['Regions']"
    - "df = pd.DataFrame(regions, columns=['Endpoint', 'RegionName'])"
    - "print(tabulate(df, headers='keys', tablefmt='psql'))"
+     - **`import boto3`**: Imports the boto3 library.
+     - **`import pandas as pd`**: Imports the pandas library and aliases it as pd.
+     - **`from tabulate import tabulate`**: Imports the tabulate function from the tabulate module.
+     - **`boto3.client('ec2')`**: Creates a low-level client representing Amazon EC2.
+     - **`response = ec2.describe_regions()`**: Calls the describe_regions method to get a list of regions.
+     - **`regions = response['Regions']`**: Extracts the 'Regions' data from the response.
+     - **`pd.DataFrame(regions, columns=['Endpoint', 'RegionName'])`**: Converts the data into a pandas DataFrame.
+     - **`print(tabulate(df, headers='keys', tablefmt='psql'))`**: Prints the DataFrame in a table format using tabulate.
 4. **Navigate to the folder using the terminal:**
    - "cd /home/kali/Desktop/cloud-lab/"
+     - **`cd`**: Change directory command.
+     - **`/home/kali/Desktop/cloud-lab/`**: Path to the cloud-lab folder.
 5. **Make the file executable:**
    - "chmod +x lab1.py"
+     - **`chmod +x`**: Changes the file mode to make it executable.
+     - **`lab1.py`**: The file to be made executable.
 6. **Execute the Python script:**
    - "python3 lab1.py"
+     - **`python3`**: Specifies the Python 3 interpreter.
+     - **`lab1.py`**: The Python script to be executed.
    - <Insert screenshot>
 
 <div style="page-break-after: always;"></div>
