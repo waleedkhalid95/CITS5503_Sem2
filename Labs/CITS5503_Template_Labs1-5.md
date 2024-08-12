@@ -1,4 +1,4 @@
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
+![image](https://github.com/user-attachments/assets/4da25ce6-ad21-4c1d-b615-dbe278ea904b)![image](https://github.com/user-attachments/assets/58a0d885-543b-428d-bfac-0c91d09f81cb)<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
 
   <h2>Labs 1-5</h2>
   
@@ -81,7 +81,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 1. Configure AWS CLI:
    - "aws configure"
      - **`configure`**: Starts the AWS configuration process.
-   - Enter Access Key ID: "AKIAXD4PI5LY42OCDU4I"
+   - Enter Access Key ID: "AKIAXD4PI5LY5HOWG256"
    - Enter Secret Access Key.
    - Default region name: "ap-northeast-3" (as per student ID range).
    - Default output format: "json".
