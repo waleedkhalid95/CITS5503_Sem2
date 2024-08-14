@@ -239,7 +239,86 @@ ssh -i 23803313-key.pem ubuntu@13.208.193.75"
 
 Use a Python script to implement the steps above (steps 1-6 and 8 are required, step 7 is optional). Refer to [page](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html) for details.
 
+import boto3
+import os
+import subprocess
+import time
+
+# Initialize the EC2 client
+ec2 = boto3.client('ec2')
+
+# Step 1: Create a security group
+security_group = ec2.create_security_group(
+    Description='security group for development environment',
+    GroupName='23803313-sg-boto3',
+)
+print(f"Security Group Created: {security_group['GroupId']}")
+
+# Step 2: Authorize inbound traffic for SSH
+ec2.authorize_security_group_ingress(
+    GroupName='23803313-sg-boto3',
+    IpPermissions=[
+        {
+            'IpProtocol': 'tcp',
+            'FromPort': 22,
+            'ToPort': 22,
+            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+        }
+    ]
+)
+print(f"Inbound SSH traffic authorized for {security_group['GroupId']}")
+
+# Step 3: Create a key pair
+key_pair_name = '23803313-boto3-key'
+key_pair = ec2.create_key_pair(KeyName=key_pair_name)
+key_file_path = f'{key_pair_name}.pem'
+with open(key_file_path, 'w') as file:
+    file.write(key_pair['KeyMaterial'])
+
+# Change the file permission to chmod 400
+os.chmod(key_file_path, 0o400)
+print(f'Key pair created, saved to {key_file_path}, and permissions set to 400')
+
+# Step 4: Create the instance
+instance = ec2.run_instances(
+    ImageId="ami-0a70c5266db4a6202",
+    SecurityGroupIds=[security_group['GroupId']],  # Use a list here
+    InstanceType='t2.micro',
+    KeyName=key_pair_name,
+    MinCount=1,
+    MaxCount=1
+)
+
+instance_id = instance['Instances'][0]['InstanceId']
+print(f'EC2 Instance Created: {instance_id}')
+
+# Step 5: Add a tag to your instance
+ec2.create_tags(
+    Resources=[instance_id],
+    Tags=[{'Key': 'Name', 'Value': '23803313-vm2'}]
+)
+print(f'Tag added to instance {instance_id}')
+
+# Step 6: Get the public IP address
+response = ec2.describe_instances(InstanceIds=[instance_id])
+public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
+print(f'Public IP Address of the instance: {public_ip}')
+
+print('Waiting for the instance to initialize...')
+time.sleep(240)
+
+# Step 7: Connect to the instance via SSH
+ssh_command = f"ssh -i {key_file_path} ubuntu@{public_ip}"
+print(f'Connecting to the instance via SSH: {ssh_command}')
+try:
+    subprocess.run(ssh_command, shell=True, check=True)
+except subprocess.CalledProcessError as e:
+    print(f"Failed to connect to the instance: {e}")
+
+
 **NOTE**: If you are allocated to Europe (Stockholm), eu-north-1, the type of the instance in your script should be `t3.micro` rather than `t2.micro`. When you are done, log into the EC2 console and terminate the instances you created.
+![image](https://github.com/user-attachments/assets/f47d9752-8f9d-4dc3-8d15-3c4b7c0bc7fc)
+![image](https://github.com/user-attachments/assets/b6b1f45e-d1bf-4675-913d-f1c423c117db)
 
 ## Use Docker inside a Linux OS
 
@@ -247,6 +326,8 @@ Use a Python script to implement the steps above (steps 1-6 and 8 are required, 
 ```
 sudo apt install docker.io -y
 ```
+![image](https://github.com/user-attachments/assets/e0813438-36c5-40ab-bc77-8e4c7dcba9d0)
+
 
 ### [2] Start Docker
 ```
@@ -263,6 +344,7 @@ sudo systemctl enable docker
 ```
 docker --version
 ```
+![image](https://github.com/user-attachments/assets/93a5c2f0-a8aa-468a-b638-b7f874f4a53f)
 
 ### [5] Build and run an httpd container
 
@@ -305,10 +387,12 @@ Run the image
 ```
 docker run -p 80:80 -dit --name my-app my-apache2
 ```
+![image](https://github.com/user-attachments/assets/47f797bc-af2b-41ae-bae0-539f87aef712)
 
 Open a browser and access address: http://localhost or http://127.0.0.1. 
 
 Confirm you get "Hello World!"
+![image](https://github.com/user-attachments/assets/8549d00a-5cb6-4ff4-a51c-4b4114f3902e)
 
 ### [6] Other docker commands
 
@@ -323,6 +407,7 @@ To stop and remove the container
 docker stop my-app
 docker rm my-app
 ```
+![image](https://github.com/user-attachments/assets/a9d48537-6705-465b-8cbe-f3f54ea79a98)
 
 
 <div style="page-break-after: always;"></div>
