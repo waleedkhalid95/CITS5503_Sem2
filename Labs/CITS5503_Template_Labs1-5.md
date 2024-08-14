@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/4da25ce6-ad21-4c1d-b615-dbe278ea904b)![image](https://github.com/user-attachments/assets/58a0d885-543b-428d-bfac-0c91d09f81cb)<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
 
   <h2>Labs 1-5</h2>
   
