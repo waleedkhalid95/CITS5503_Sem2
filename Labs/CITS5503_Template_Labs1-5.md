@@ -161,7 +161,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 ### [1] Create a security group
 
 ```
-aws ec2 create-security-group --group-name <student number>-sg --description "security group for development environment"
+aws ec2 create-security-group --group-name 23803313-sg --description "security group for development environment"
 ```
 
 This will use the default VPC (if you want to specify a VPC, use --vpc-id vpc-xxxxxxxx). Take a note of the security group id that is created. 
@@ -169,20 +169,23 @@ This will use the default VPC (if you want to specify a VPC, use --vpc-id vpc-xx
 ### [2] Authorise inbound traffic for ssh
 
 ```
-aws ec2 authorize-security-group-ingress --group-name <student number>-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-name 23803313-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
 ```
 
 ### [3] Create a key pair
 
 ```
-aws ec2 create-key-pair --key-name <student number>-key --query 'KeyMaterial' --output text > <student number>-key.pem
+aws ec2 create-key-pair --key-name 23803313-key --query 'KeyMaterial' --output text > 23803313-key.pem
 ```
 
 To use this key on Linux, copy the file to a directory ~/.ssh and change the permissions to:
 
 ```
-chmod 400 <student number>-key.pem
+chmod 400 23803313-key.pem
 ```
+
+![image](https://github.com/user-attachments/assets/f6a91887-c276-465f-a00c-b4757f686976)
+
 ### [4] Create the instance 
 
 | Student Number | Region | Region Name | ami id |
@@ -202,7 +205,7 @@ chmod 400 <student number>-key.pem
 Based on your region code, find the corresponding ami id in the table above and fill it in the command below:
 
 ```
- aws ec2 run-instances --image-id <ami id> --security-group-ids <student number>-sg --count 1 --instance-type t2.micro --key-name <student number>-key --query 'Instances[0].InstanceId'
+ aws ec2 run-instances --image-id ami-0a70c5266db4a6202 --security-group-ids 23803313-sg --count 1 --instance-type t2.micro --key-name 23803313-key --query 'Instances[0].InstanceId'
 
  ```
 
@@ -211,23 +214,26 @@ If you are allocated to Europe (Stockholm), eu-north-1, please use `t3.micro` to
 ### [5] Add a tag to your Instance
 
  ```
-  aws ec2 create-tags --resources <Instance Id from above> --tags Key=Name,Value=<student number>
+  aws ec2 create-tags --resources i-0b3193d1eefc9086f --tags Key=Name,Value=23803313-vm1
  ```
 **NOTE**: If you need to create a single instance, follow the naming format of `<student number>-vm` (e.g., 24242424-vm). If you need to create multiple ones, follow the naming format of `<student number>-vm1` and `<student number>-vm2` (e.g., 24242424-vm1, 24242424-vm2).
 
 ### [6] Get the public IP address
 
 ```
-aws ec2 describe-instances --instance-ids <Instance Id from above> --query 'Reservations[0].Instances[0].PublicIpAddress'
+aws ec2 describe-instances --instance-ids i-0b3193d1eefc9086f --query 'Reservations[0].Instances[0].PublicIpAddress'
 ```
 
 ### [7] Connect to the instance via ssh
 ```
-ssh -i <student number>-key.pem ubuntu@<IP Address from above>
+ssh -i 23803313-key.pem ubuntu@13.208.193.75"
 ```
+![image](https://github.com/user-attachments/assets/78313900-62ae-4a51-8f67-db49ef95f508)
+
 
 ### [8] List the created instance using the AWS console
 
+![image](https://github.com/user-attachments/assets/614b9593-1e17-4fa6-8d58-cfab1b030a10)
 
 ## Create an EC2 instance with Python Boto3
 
