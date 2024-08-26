@@ -166,14 +166,34 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 ```
 aws ec2 create-security-group --group-name 23803313-sg --description "security group for development environment"
 ```
+{
+    "GroupId": "sg-05f6535931263b31f"
+}
 
-This will use the default VPC (if you want to specify a VPC, use --vpc-id vpc-xxxxxxxx). Take a note of the security group id that is created. 
+![image](https://github.com/user-attachments/assets/09a2b62f-df3c-47fa-8ea4-2f85e5ccc530)
 
 ### [2] Authorise inbound traffic for ssh
 
 ```
 aws ec2 authorize-security-group-ingress --group-name 23803313-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
 ```
+{
+    "Return": true,
+    "SecurityGroupRules": [
+        {
+            "SecurityGroupRuleId": "sgr-01bfacc882ad92e77",
+            "GroupId": "sg-05f6535931263b31f",
+            "GroupOwnerId": "489389878001",
+            "IsEgress": false,
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIpv4": "0.0.0.0/0"
+        }
+    ]
+}
+
+![image](https://github.com/user-attachments/assets/27d744f1-e297-4336-afbb-da10c11bb7e6)
 
 ### [3] Create a key pair
 
@@ -187,22 +207,15 @@ To use this key on Linux, copy the file to a directory ~/.ssh and change the per
 chmod 400 23803313-key.pem
 ```
 
-![image](https://github.com/user-attachments/assets/f6a91887-c276-465f-a00c-b4757f686976)
+![image](https://github.com/user-attachments/assets/f203ae30-0fc6-4ea0-ac07-72b9b908a1bc)
 
 ### [4] Create the instance 
 
 | Student Number | Region | Region Name | ami id |
 | --- | --- | --- | --- |
-| 20666666 – 22980000 | US East (N. Virginia) |	us-east-1 |	ami-0a0e5d9c7acc336f1 |
-| 22984000 – 23370000 | Asia Pacific (Tokyo)	| ap-northeast-1	| ami-0162fe8bfebb6ea16 |
-| 23400000 – 23798000 | Asia Pacific (Seoul)	| ap-northeast-2	| ami-056a29f2eddc40520 |
+
 | 23799000 – 23863700 | Asia Pacific (Osaka)	| ap-northeast-3	| ami-0a70c5266db4a6202 |
-| 23864000 – 23902200 | Asia Pacific (Mumbai)	| ap-south-1	| ami-0c2af51e265bd5e0e |
-| 23904000 – 23946000 | Asia Pacific (Singapore)	| ap-southeast-1	| ami-0497a974f8d5dcef8 |
-| 23946100 – 24024000 | Asia Pacific (Sydney)	| ap-southeast-2	| ami-0375ab65ee943a2a6 |
-| 24025000 – 24071000 | Canada (Central)	| ca-central-1	| ami-048ddca51ab3229ab |
-| 24071100 – 24141000 | Europe (Frankfurt)	| eu-central-1	| ami-07652eda1fbad7432 |
-| 24143000 – 24700000 | Europe (Stockholm)	| eu-north-1	| ami-07a0715df72e58928 |
+
 
 
 Based on your region code, find the corresponding ami id in the table above and fill it in the command below:
@@ -211,37 +224,40 @@ Based on your region code, find the corresponding ami id in the table above and 
  aws ec2 run-instances --image-id ami-0a70c5266db4a6202 --security-group-ids 23803313-sg --count 1 --instance-type t2.micro --key-name 23803313-key --query 'Instances[0].InstanceId'
 
  ```
-
-If you are allocated to Europe (Stockholm), eu-north-1, please use `t3.micro` to replace `t2.micro` in the command above.
+Instace created i-0dcfef96ec413ecca
+![image](https://github.com/user-attachments/assets/3aec8350-8576-4ef9-b344-9f664f8fde70)
 
 ### [5] Add a tag to your Instance
 
  ```
-  aws ec2 create-tags --resources i-0b3193d1eefc9086f --tags Key=Name,Value=23803313-vm1
+  aws ec2 create-tags --resources i-0dcfef96ec413ecca --tags Key=Name,Value=23803313-vm1
  ```
+![image](https://github.com/user-attachments/assets/50613443-6ef9-4d86-a60f-36324e391364)
+
 **NOTE**: If you need to create a single instance, follow the naming format of `<student number>-vm` (e.g., 24242424-vm). If you need to create multiple ones, follow the naming format of `<student number>-vm1` and `<student number>-vm2` (e.g., 24242424-vm1, 24242424-vm2).
 
 ### [6] Get the public IP address
 
 ```
-aws ec2 describe-instances --instance-ids i-0b3193d1eefc9086f --query 'Reservations[0].Instances[0].PublicIpAddress'
+aws ec2 describe-instances --instance-ids i-0dcfef96ec413ecca --query 'Reservations[0].Instances[0].PublicIpAddress'
 ```
+13.208.91.27
+![image](https://github.com/user-attachments/assets/f3ffee53-faed-44a1-a36d-326a7f9d6c29)
 
 ### [7] Connect to the instance via ssh
 ```
-ssh -i 23803313-key.pem ubuntu@13.208.193.75"
+ssh -i 23803313-key.pem ubuntu@13.208.91.27"
 ```
-![image](https://github.com/user-attachments/assets/78313900-62ae-4a51-8f67-db49ef95f508)
+![image](https://github.com/user-attachments/assets/42851d5a-8d3b-4e82-a78e-f5dbe1b79c42)
 
 
 ### [8] List the created instance using the AWS console
-
-![image](https://github.com/user-attachments/assets/614b9593-1e17-4fa6-8d58-cfab1b030a10)
+![image](https://github.com/user-attachments/assets/2d83568f-3fc4-47e6-9789-eb175386806d)
 
 ## Create an EC2 instance with Python Boto3
 
 Use a Python script to implement the steps above (steps 1-6 and 8 are required, step 7 is optional). Refer to [page](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html) for details.
-
+```
 import boto3
 import os
 import subprocess
@@ -302,6 +318,8 @@ ec2.create_tags(
 )
 print(f'Tag added to instance {instance_id}')
 
+
+
 # Step 6: Get the public IP address
 response = ec2.describe_instances(InstanceIds=[instance_id])
 public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
@@ -317,11 +335,11 @@ try:
     subprocess.run(ssh_command, shell=True, check=True)
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
-
+```
 
 **NOTE**: If you are allocated to Europe (Stockholm), eu-north-1, the type of the instance in your script should be `t3.micro` rather than `t2.micro`. When you are done, log into the EC2 console and terminate the instances you created.
-![image](https://github.com/user-attachments/assets/f47d9752-8f9d-4dc3-8d15-3c4b7c0bc7fc)
-![image](https://github.com/user-attachments/assets/b6b1f45e-d1bf-4675-913d-f1c423c117db)
+![image](https://github.com/user-attachments/assets/653b635c-203d-4166-af9c-633b7b47351a)
+![image](https://github.com/user-attachments/assets/95724b9d-86ea-4326-897b-6f2e5805bf3b)
 
 ## Use Docker inside a Linux OS
 
@@ -376,6 +394,7 @@ Build a docker image
 ```
 docker build -t my-apache2 .
 ```
+![image](https://github.com/user-attachments/assets/331a755a-35f8-40be-bde6-6cf97188b517)
 
 If you run into permission errors, you may need add your user to the docker group:
 
