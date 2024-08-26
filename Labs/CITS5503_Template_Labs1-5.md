@@ -1,4 +1,4 @@
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
+![image](https://github.com/user-attachments/assets/011c2ae8-d45d-4bba-9c1b-db7a46409f56)<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
 
   <h2>Labs 1-5</h2>
   
@@ -21,13 +21,14 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 2. Went to **Security Credentials**.
 3. Scrolled down to find the **Access Keys** section and clicked on **Create access key**.
 4. Selected **CLI**.
-   - <Insert screenshot of Access Key Best Practices & Alternatives, hovering on CLI option>
-5. Set the description tag.
-   - <Insert screenshot of Description Tag page>
-6. Clicked on **Create access key**.
+   ![Screenshot 2024-08-02 203545](https://github.com/user-attachments/assets/a67ed185-d7b2-4970-997a-699c7127e113)
+
+6. Set the description tag.
+7. Clicked on **Create access key**.
    - A confirmation screen popped up confirming that the access key is created.
-   - <Insert screenshot of confirmation screen>
-7. Made a note of the ID and password or downloaded the CSV file containing the ID and password.
+     ![Screenshot 2024-08-02 203925](https://github.com/user-attachments/assets/765ca5d6-ddd1-416c-9348-e79a4750eeab)
+
+8. Made a note of the ID and password or downloaded the CSV file containing the ID and password.
 
 ## Set up recent Linux OSes
 
@@ -36,10 +37,10 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 3. **Open VMware:**
    - Click on **File** on the top right and select **Open**.
    - Find the VMX file for Kali Linux in the extracted directory.
-   - <Insert screenshot>
+     ![Screenshot 2024-08-02 204513](https://github.com/user-attachments/assets/3fb96208-005a-461f-8940-8272ac592ff0)
+
 4. **Edit Virtual Machine Settings:**
    - Set memory to 8GB, 4 processor cores, 30GB hard disk, and NAT network.
-   - <Insert screenshot>
 5. **Power on the virtual machine.**
 6. **Log into Kali Linux with the default ID and password.**
 
@@ -54,7 +55,8 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`update`**: Fetches the package lists from the repositories and updates them to get information on the newest versions of packages and their dependencies.
    - "sudo apt -y upgrade"
      - **`-y`**: Assumes "yes" as the answer to all prompts and runs non-interactively.
-   - <Insert screenshot>
+    ![image](https://github.com/user-attachments/assets/d27e790a-a68e-4c5e-9dfb-e74cbc5b3165)
+
 2. Check Python version and install pip:
    - "python3.8 --version"
      - **`python3.8`**: Specifies the Python 3.8 version.
@@ -62,7 +64,8 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
    - "sudo apt install python3-pip"
      - **`install`**: Installs the specified package.
      - **`python3-pip`**: Pip is the package installer for Python.
-   - <Insert screenshot>
+       ![Screenshot 2024-08-02 215157](https://github.com/user-attachments/assets/bc9ac7be-8b8f-46d1-ad1b-c75edbce2f6a)
+
 
 ### [2] Install awscli
 
@@ -75,16 +78,20 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`install`**: Installs the specified package.
      - **`awscli`**: AWS Command Line Interface package.
      - **`--upgrade`**: Upgrades the package to the latest version.
+       ![image](https://github.com/user-attachments/assets/2a36e5ba-13ec-4b83-a50d-ad4a38bf6058)
+
 
 ### [3] Configure AWS
 
 1. Configure AWS CLI:
    - "aws configure"
      - **`configure`**: Starts the AWS configuration process.
-   - Enter Access Key ID: "AKIAXD4PI5LY5HOWG256"
+   - Enter Access Key ID: "AKIAXD4PI5LY6VWGSI4M"
    - Enter Secret Access Key.
    - Default region name: "ap-northeast-3" (as per student ID range).
    - Default output format: "json".
+     ![image](https://github.com/user-attachments/assets/2fac505e-644f-49f8-ae4f-e6616dc18837)
+
 
 ### [4] Install boto3
 
@@ -102,7 +109,8 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`describe-regions`**: Describes the regions that are available to you.
      - **`--output table`**: Specifies that the output should be formatted as a table.
    - The output is a table.
-   - <Insert screenshot>
+     ![image](https://github.com/user-attachments/assets/5871561f-d577-4389-942c-025cc694079e)
+
 
 ### [2] Test the Python environment
 
@@ -115,22 +123,16 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`ec2.describe_regions()`**: Calls the describe_regions method to get a list of regions.
    - "print(response)"
      - **`print(response)`**: Prints the response.
-   - <Insert screenshot>
+       ![image](https://github.com/user-attachments/assets/9c8fa783-89fe-4e3e-a721-8f2cf731033a)
+
 
 ### [3] Write a Python script
 
 1. **Create a folder on the Desktop named `cloud-lab`.**
 2. **Create an empty file and name it `lab1.py`.**
 3. **Open the file and add the following Python script, then save:**
-   - "import boto3"
-   - "import pandas as pd"
-   - "from tabulate import tabulate"
-   - ""
-   - "ec2 = boto3.client('ec2')"
-   - "response = ec2.describe_regions()"
-   - "regions = response['Regions']"
-   - "df = pd.DataFrame(regions, columns=['Endpoint', 'RegionName'])"
-   - "print(tabulate(df, headers='keys', tablefmt='psql'))"
+      - ![image](https://github.com/user-attachments/assets/be11cd02-2b57-4e64-8f82-b2b65c9a1e4f)
+
      - **`import boto3`**: Imports the boto3 library.
      - **`import pandas as pd`**: Imports the pandas library and aliases it as pd.
      - **`from tabulate import tabulate`**: Imports the tabulate function from the tabulate module.
@@ -151,7 +153,8 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
    - "python3 lab1.py"
      - **`python3`**: Specifies the Python 3 interpreter.
      - **`lab1.py`**: The Python script to be executed.
-   - <Insert screenshot>
+    ![image](https://github.com/user-attachments/assets/d14a0ce4-bb70-4c8e-bba7-68a0ca759304)
+
 
 <div style="page-break-after: always;"></div>
 
