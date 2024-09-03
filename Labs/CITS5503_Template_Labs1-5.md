@@ -158,67 +158,53 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 
 <div style="page-break-after: always;"></div>
 
-# Lab 2
+# Lab 2: Creating an EC2 Instance with AWS CLI and Boto3
+### Summary
+In this lab, we created an EC2 instance on AWS using both the AWS CLI and Python's Boto3 SDK. The objective was to automate the setup of a secure and accessible virtual machine for development purposes. Key tasks included setting up security rules, generating secure access keys, launching the instance, and configuring Docker to run a simple web server. Each step ensures that the environment is secure, accessible, and functional for cloud-based development and testing.
 
-## Create an EC2 instance using awscli
-### [1] Create a security group
+## EC2 Instance Setup Using AWS CLI
 
+### [1] Create a Security Group
+We create a security group using:
 ```
 aws ec2 create-security-group --group-name 23803313-sg --description "security group for development environment"
 ```
-{
-    "GroupId": "sg-05f6535931263b31f"
-}
+- '--group-name': Specifies the name of the security group
+- '--description': Describes the purpose of the security group. This security group acts as a virtual firewall to control inbound and outbound traffic for our EC2 instances. The output provides the security group ID, which we need for subsequent steps.
 
 ![image](https://github.com/user-attachments/assets/09a2b62f-df3c-47fa-8ea4-2f85e5ccc530)
+Security groups act as virtual firewalls that control traffic to instances. This is essential for defining which types of connections are allowed.
 
-### [2] Authorise inbound traffic for ssh
+### [2] Authorize Inbound SSH Traffic
+Next, we authorize SSH access to the EC2 instance by modifying the security group with:
 
 ```
 aws ec2 authorize-security-group-ingress --group-name 23803313-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
 ```
-{
-    "Return": true,
-    "SecurityGroupRules": [
-        {
-            "SecurityGroupRuleId": "sgr-01bfacc882ad92e77",
-            "GroupId": "sg-05f6535931263b31f",
-            "GroupOwnerId": "489389878001",
-            "IsEgress": false,
-            "IpProtocol": "tcp",
-            "FromPort": 22,
-            "ToPort": 22,
-            "CidrIpv4": "0.0.0.0/0"
-        }
-    ]
-}
+- '--protocol tcp --port 22': Specifies TCP as the protocol and opens port 22 for SSH access.
+- '--cidr 0.0.0.0/0': Allows access from any IP address. This configuration allows secure remote SSH connections to the EC2 instance.
 
 ![image](https://github.com/user-attachments/assets/27d744f1-e297-4336-afbb-da10c11bb7e6)
 
-### [3] Create a key pair
+### [3] Create a Key Pair and Set Permissions
+To securely connect to our EC2 instance, we create a key pair using:
 
 ```
 aws ec2 create-key-pair --key-name 23803313-key --query 'KeyMaterial' --output text > 23803313-key.pem
 ```
 
-To use this key on Linux, copy the file to a directory ~/.ssh and change the permissions to:
+- '--key-name': Specifies the name of the key pair.
+- '--query 'KeyMaterial' --output text > 23803313-key.pem': Extracts the key material and saves it to a .pem file. The private key is essential for SSH access, and we secure the key with:
 
 ```
 chmod 400 23803313-key.pem
 ```
+This restricts the file permissions to read-only for the owner, enhancing security.
 
 ![image](https://github.com/user-attachments/assets/f203ae30-0fc6-4ea0-ac07-72b9b908a1bc)
 
-### [4] Create the instance 
-
-| Student Number | Region | Region Name | ami id |
-| --- | --- | --- | --- |
-
-| 23799000 – 23863700 | Asia Pacific (Osaka)	| ap-northeast-3	| ami-0a70c5266db4a6202 |
-
-
-
-Based on your region code, find the corresponding ami id in the table above and fill it in the command below:
+### [4] Launch the EC2 Instance
+Using the AMI ID corresponding to our region, we launch an instance with:
 
 ```
  aws ec2 run-instances --image-id ami-0a70c5266db4a6202 --security-group-ids 23803313-sg --count 1 --instance-type t2.micro --key-name 23803313-key --query 'Instances[0].InstanceId'
@@ -227,36 +213,44 @@ Based on your region code, find the corresponding ami id in the table above and 
 Instace created i-0dcfef96ec413ecca
 ![image](https://github.com/user-attachments/assets/3aec8350-8576-4ef9-b344-9f664f8fde70)
 
-### [5] Add a tag to your Instance
+- '--image-id': Specifies the AMI ID for the Osaka region (ami-0a70c5266db4a6202).
+- '--security-group-ids': Associates the instance with the previously created security group.
+- '--instance-type t2.micro': Uses a cost-effective instance type suitable for development environments. The command outputs the instance ID upon successful creation.
 
+### [5] Tag the Instance
+To identify the instance easily, we add a tag:
  ```
   aws ec2 create-tags --resources i-0dcfef96ec413ecca --tags Key=Name,Value=23803313-vm1
  ```
 ![image](https://github.com/user-attachments/assets/50613443-6ef9-4d86-a60f-36324e391364)
+- '--resources': Specifies the instance ID.
+- '--tags Key=Name,Value=23803313-vm1': Adds a descriptive tag to the instance. This helps in managing and identifying instances in the AWS console.
 
-**NOTE**: If you need to create a single instance, follow the naming format of `<student number>-vm` (e.g., 24242424-vm). If you need to create multiple ones, follow the naming format of `<student number>-vm1` and `<student number>-vm2` (e.g., 24242424-vm1, 24242424-vm2).
-
-### [6] Get the public IP address
+### [6] Retrieve the Public IP Address
+To connect to our instance, we need its public IP address, obtained via:
 
 ```
 aws ec2 describe-instances --instance-ids i-0dcfef96ec413ecca --query 'Reservations[0].Instances[0].PublicIpAddress'
 ```
-13.208.91.27
+This command queries the instance details and extracts the public IP, 13.208.91.27.
+
 ![image](https://github.com/user-attachments/assets/f3ffee53-faed-44a1-a36d-326a7f9d6c29)
 
-### [7] Connect to the instance via ssh
+### [7] Connect to the Instance via SSH
+Finally, we connect to the instance using SSH:
 ```
 ssh -i 23803313-key.pem ubuntu@13.208.91.27"
 ```
 ![image](https://github.com/user-attachments/assets/42851d5a-8d3b-4e82-a78e-f5dbe1b79c42)
+The SSH command uses the private key and the instance’s public IP address to establish a secure shell session.
 
-
-### [8] List the created instance using the AWS console
+### [8] List the Instance in AWS Console
+After completing the above steps, the instance can be managed via the AWS console.
 ![image](https://github.com/user-attachments/assets/2d83568f-3fc4-47e6-9789-eb175386806d)
 
-## Create an EC2 instance with Python Boto3
+## EC2 Instance Setup Using Python Boto3
+Using Python's Boto3, we automated the same steps programmatically, allowing for greater flexibility and integration into larger automation workflows. The Python script covered creating security groups, setting up key pairs, launching instances, and configuring access, similar to the AWS CLI approach but in a more scriptable format.
 
-Use a Python script to implement the steps above (steps 1-6 and 8 are required, step 7 is optional). Refer to [page](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html) for details.
 ```
 import boto3
 import os
@@ -336,42 +330,32 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
 ```
-
-**NOTE**: If you are allocated to Europe (Stockholm), eu-north-1, the type of the instance in your script should be `t3.micro` rather than `t2.micro`. When you are done, log into the EC2 console and terminate the instances you created.
 ![image](https://github.com/user-attachments/assets/653b635c-203d-4166-af9c-633b7b47351a)
 ![image](https://github.com/user-attachments/assets/95724b9d-86ea-4326-897b-6f2e5805bf3b)
 
-## Use Docker inside a Linux OS
-
+## Use Docker Inside a Linux OS
+Docker allows for containerized applications, making it easier to deploy and manage applications consistently.
+To demonstrate Docker, we installed it on the EC2 instance and ran a simple HTTP server
 ### [1] Install Docker
 ```
 sudo apt install docker.io -y
 ```
 ![image](https://github.com/user-attachments/assets/e0813438-36c5-40ab-bc77-8e4c7dcba9d0)
+This command installs Docker on the instance, enabling container management.
 
-
-### [2] Start Docker
+### [2] Start and Enable Docker
 ```
 sudo systemctl start docker
-```
-
-### [3] Enable Docker
-```
 sudo systemctl enable docker
-```
-
-### [4] Check the version
-
-```
 docker --version
 ```
+Starting Docker ensures the service runs immediately, and enabling it makes Docker start automatically on boot. Then we verify the Docker installation by checking its version.
+
 ![image](https://github.com/user-attachments/assets/93a5c2f0-a8aa-468a-b638-b7f874f4a53f)
 
-### [5] Build and run an httpd container
+### [4] Build and Run an HTTPD Container
 
-Create a directory called html
-
-Edit a file index.html inside the html directory and add the following content
+Create a directory called html, then create an index.html file inside with:
 
 ```
   <html>
@@ -381,13 +365,12 @@ Edit a file index.html inside the html directory and add the following content
     </body>
   </html>
 ```
-
-Create a file called Dockerfile outside the html directory with the following content:
-
+Create a Dockerfile outside the html directory:
 ```
 FROM httpd:2.4
 COPY ./html/ /usr/local/apache2/htdocs/
 ```
+The server was then accessed via the instance’s IP, demonstrating how Docker simplifies the deployment of applications on cloud instances.
 
 Build a docker image
 
@@ -396,29 +379,20 @@ docker build -t my-apache2 .
 ```
 ![image](https://github.com/user-attachments/assets/331a755a-35f8-40be-bde6-6cf97188b517)
 
-If you run into permission errors, you may need add your user to the docker group:
-
-```
-sudo usermod -a -G docker <username>
-```
-
-Be sure to log out and log back in for this change to take effect.
-
-Run the image
+Run the container
 
 ```
 docker run -p 80:80 -dit --name my-app my-apache2
 ```
 ![image](https://github.com/user-attachments/assets/47f797bc-af2b-41ae-bae0-539f87aef712)
 
-Open a browser and access address: http://localhost or http://127.0.0.1. 
+Visit http://localhost to confirm the "Hello World!" message displays.
 
-Confirm you get "Hello World!"
 ![image](https://github.com/user-attachments/assets/8549d00a-5cb6-4ff4-a51c-4b4114f3902e)
 
-### [6] Other docker commands
+### [5] Other docker commands
 
-To check what is running
+To check running containers
 
 ```
 docker ps -a
