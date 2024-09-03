@@ -21,11 +21,13 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 2. Went to **Security Credentials**.
 3. Scrolled down to find the **Access Keys** section and clicked on **Create access key**.
 4. Selected **CLI**.
+   
    ![Screenshot 2024-08-02 203545](https://github.com/user-attachments/assets/a67ed185-d7b2-4970-997a-699c7127e113)
 
 6. Set the description tag.
 7. Clicked on **Create access key**.
    - A confirmation screen popped up confirming that the access key is created.
+     
      ![Screenshot 2024-08-02 203925](https://github.com/user-attachments/assets/765ca5d6-ddd1-416c-9348-e79a4750eeab)
 
 8. Made a note of the ID and password or downloaded the CSV file containing the ID and password.
@@ -37,6 +39,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 3. **Open VMware:**
    - Click on **File** on the top right and select **Open**.
    - Find the VMX file for Kali Linux in the extracted directory.
+     
      ![Screenshot 2024-08-02 204513](https://github.com/user-attachments/assets/3fb96208-005a-461f-8940-8272ac592ff0)
 
 4. **Edit Virtual Machine Settings:**
@@ -55,6 +58,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`update`**: Fetches the package lists from the repositories and updates them to get information on the newest versions of packages and their dependencies.
    - "sudo apt -y upgrade"
      - **`-y`**: Assumes "yes" as the answer to all prompts and runs non-interactively.
+       
     ![image](https://github.com/user-attachments/assets/d27e790a-a68e-4c5e-9dfb-e74cbc5b3165)
 
 2. Check Python version and install pip:
@@ -64,6 +68,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
    - "sudo apt install python3-pip"
      - **`install`**: Installs the specified package.
      - **`python3-pip`**: Pip is the package installer for Python.
+       
        ![Screenshot 2024-08-02 215157](https://github.com/user-attachments/assets/bc9ac7be-8b8f-46d1-ad1b-c75edbce2f6a)
 
 
@@ -78,6 +83,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`install`**: Installs the specified package.
      - **`awscli`**: AWS Command Line Interface package.
      - **`--upgrade`**: Upgrades the package to the latest version.
+       
        ![image](https://github.com/user-attachments/assets/2a36e5ba-13ec-4b83-a50d-ad4a38bf6058)
 
 
@@ -90,6 +96,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
    - Enter Secret Access Key.
    - Default region name: "ap-northeast-3" (as per student ID range).
    - Default output format: "json".
+     
      ![image](https://github.com/user-attachments/assets/2fac505e-644f-49f8-ae4f-e6616dc18837)
 
 
@@ -109,6 +116,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`describe-regions`**: Describes the regions that are available to you.
      - **`--output table`**: Specifies that the output should be formatted as a table.
    - The output is a table.
+     
      ![image](https://github.com/user-attachments/assets/5871561f-d577-4389-942c-025cc694079e)
 
 
@@ -123,6 +131,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`ec2.describe_regions()`**: Calls the describe_regions method to get a list of regions.
    - "print(response)"
      - **`print(response)`**: Prints the response.
+       
        ![image](https://github.com/user-attachments/assets/9c8fa783-89fe-4e3e-a721-8f2cf731033a)
 
 
@@ -131,6 +140,7 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
 1. **Create a folder on the Desktop named `cloud-lab`.**
 2. **Create an empty file and name it `lab1.py`.**
 3. **Open the file and add the following Python script, then save:**
+   
       - ![image](https://github.com/user-attachments/assets/be11cd02-2b57-4e64-8f82-b2b65c9a1e4f)
 
      - **`import boto3`**: Imports the boto3 library.
@@ -141,18 +151,19 @@ First, I went to [AWS Console](https://489389878001.signin.aws.amazon.com/consol
      - **`regions = response['Regions']`**: Extracts the 'Regions' data from the response.
      - **`pd.DataFrame(regions, columns=['Endpoint', 'RegionName'])`**: Converts the data into a pandas DataFrame.
      - **`print(tabulate(df, headers='keys', tablefmt='psql'))`**: Prints the DataFrame in a table format using tabulate.
-4. **Navigate to the folder using the terminal:**
+5. **Navigate to the folder using the terminal:**
    - "cd /home/kali/Desktop/cloud-lab/"
      - **`cd`**: Change directory command.
      - **`/home/kali/Desktop/cloud-lab/`**: Path to the cloud-lab folder.
-5. **Make the file executable:**
+6. **Make the file executable:**
    - "chmod +x lab1.py"
      - **`chmod +x`**: Changes the file mode to make it executable.
      - **`lab1.py`**: The file to be made executable.
-6. **Execute the Python script:**
+7. **Execute the Python script:**
    - "python3 lab1.py"
      - **`python3`**: Specifies the Python 3 interpreter.
      - **`lab1.py`**: The Python script to be executed.
+       
     ![image](https://github.com/user-attachments/assets/d14a0ce4-bb70-4c8e-bba7-68a0ca759304)
 
 
@@ -173,6 +184,7 @@ aws ec2 create-security-group --group-name 23803313-sg --description "security g
 - '--description': Describes the purpose of the security group. This security group acts as a virtual firewall to control inbound and outbound traffic for our EC2 instances. The output provides the security group ID, which we need for subsequent steps.
 
 ![image](https://github.com/user-attachments/assets/09a2b62f-df3c-47fa-8ea4-2f85e5ccc530)
+
 Security groups act as virtual firewalls that control traffic to instances. This is essential for defining which types of connections are allowed.
 
 ### [2] Authorize Inbound SSH Traffic
@@ -211,6 +223,7 @@ Using the AMI ID corresponding to our region, we launch an instance with:
 
  ```
 Instace created i-0dcfef96ec413ecca
+
 ![image](https://github.com/user-attachments/assets/3aec8350-8576-4ef9-b344-9f664f8fde70)
 
 - '--image-id': Specifies the AMI ID for the Osaka region (ami-0a70c5266db4a6202).
@@ -223,6 +236,7 @@ To identify the instance easily, we add a tag:
   aws ec2 create-tags --resources i-0dcfef96ec413ecca --tags Key=Name,Value=23803313-vm1
  ```
 ![image](https://github.com/user-attachments/assets/50613443-6ef9-4d86-a60f-36324e391364)
+
 - '--resources': Specifies the instance ID.
 - '--tags Key=Name,Value=23803313-vm1': Adds a descriptive tag to the instance. This helps in managing and identifying instances in the AWS console.
 
@@ -242,10 +256,12 @@ Finally, we connect to the instance using SSH:
 ssh -i 23803313-key.pem ubuntu@13.208.91.27"
 ```
 ![image](https://github.com/user-attachments/assets/42851d5a-8d3b-4e82-a78e-f5dbe1b79c42)
+
 The SSH command uses the private key and the instance’s public IP address to establish a secure shell session.
 
 ### [8] List the Instance in AWS Console
 After completing the above steps, the instance can be managed via the AWS console.
+
 ![image](https://github.com/user-attachments/assets/2d83568f-3fc4-47e6-9789-eb175386806d)
 
 ## EC2 Instance Setup Using Python Boto3
@@ -330,7 +346,9 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
 ```
+
 ![image](https://github.com/user-attachments/assets/653b635c-203d-4166-af9c-633b7b47351a)
+
 ![image](https://github.com/user-attachments/assets/95724b9d-86ea-4326-897b-6f2e5805bf3b)
 
 ## Use Docker Inside a Linux OS
@@ -340,7 +358,9 @@ To demonstrate Docker, we installed it on the EC2 instance and ran a simple HTTP
 ```
 sudo apt install docker.io -y
 ```
+
 ![image](https://github.com/user-attachments/assets/e0813438-36c5-40ab-bc77-8e4c7dcba9d0)
+
 This command installs Docker on the instance, enabling container management.
 
 ### [2] Start and Enable Docker
@@ -377,6 +397,7 @@ Build a docker image
 ```
 docker build -t my-apache2 .
 ```
+
 ![image](https://github.com/user-attachments/assets/331a755a-35f8-40be-bde6-6cf97188b517)
 
 Run the container
@@ -384,6 +405,7 @@ Run the container
 ```
 docker run -p 80:80 -dit --name my-app my-apache2
 ```
+
 ![image](https://github.com/user-attachments/assets/47f797bc-af2b-41ae-bae0-539f87aef712)
 
 Visit http://localhost to confirm the "Hello World!" message displays.
@@ -403,8 +425,8 @@ To stop and remove the container
 docker stop my-app
 docker rm my-app
 ```
-![image](https://github.com/user-attachments/assets/a9d48537-6705-465b-8cbe-f3f54ea79a98)
 
+![image](https://github.com/user-attachments/assets/a9d48537-6705-465b-8cbe-f3f54ea79a98)
 
 <div style="page-break-after: always;"></div>
 
@@ -470,12 +492,12 @@ print("done")
 - This approach ensures all files are uploaded to the S3 bucket, replicating the local directory structure.
 
 Upon running the script, the directory structure from rootdir was replicated in the S3 bucket, with files correctly uploaded.
+
 ![image](https://github.com/user-attachments/assets/77e64c70-11a5-4f27-b6f0-212278b5b2b8)
 
 I verified the bucket and file creation through the AWS console.
 
 ![image](https://github.com/user-attachments/assets/154c624d-8d9b-4162-be8a-f6c199eab45a)
-
 
 ### [3] Restore from S3
 
@@ -525,8 +547,8 @@ except botocore.exceptions.ClientError as error:
 - Files are downloaded from S3 to the local path with s3.meta.client.download_file(BUCKET_NAME, s3_key, local_path), replicating the original directory structure.
 
 After running this script, the Restored directory was populated with the files and structure from the S3 bucket, successfully restoring the original setup.
-![image](https://github.com/user-attachments/assets/0a3f7e58-b258-4432-bc35-dfe6906fb90a)
 
+![image](https://github.com/user-attachments/assets/0a3f7e58-b258-4432-bc35-dfe6906fb90a)
 
 ### [4] Write Information About Files to DynamoDB
 
@@ -651,6 +673,7 @@ I used the AWS CLI to scan the CloudFiles table and output the data:
 ```bash
 aws dynamodb delete-table --table-name CloudFiles --region ap-northeast-3
 ```
+
 ![image](https://github.com/user-attachments/assets/cc8ed6c6-b27c-458a-836b-8f147675c205)
 
 ### [6] Delete the table
@@ -660,6 +683,7 @@ After completing the tasks, I deleted the table using:
 ```bash
 aws dynamodb delete-table --table-name CloudFiles --region ap-northeast-3
 ```
+
 ![image](https://github.com/user-attachments/assets/6c2f929e-8271-4a1c-a1e5-e3efa27dd285)
 
 Finally, I removed the S3 bucket from the AWS console.
