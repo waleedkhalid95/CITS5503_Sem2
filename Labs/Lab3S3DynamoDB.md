@@ -36,27 +36,108 @@ The aim of this lab is to write a program that will:
 ### [1] Preparation
 
 Download the python code `cloudstorage.py` from the directory of [src](https://github.com/zhangzhics/CITS5503_Sem2/blob/master/Labs/src/cloudstorage.py) \
-Create a directory `rootdir` \
-Create a file in `rootdir` called `rootfile.txt` and write some content in it `1\n2\n3\n4\n5\n` \
-Create a second directory in rootdir called `subdir`, and in the `subdir` directory create another file `subfile.txt` with the same content as `rootfile.txt`.
+First we create a directory `rootdir` \
+then create a file in `rootdir` called `rootfile.txt` and write some content in it `1\n2\n3\n4\n5\n` \
+then we create a second directory in rootdir called `subdir`, and in the `subdir` directory create another file `subfile.txt` with the same content as `rootfile.txt`. This is done to create a nested directory and subdirectory that we can creplicate in our s3 bucket
 
 ### [2] Save to S3 by updating `cloudstorage.py`
 
-Modify the downloaded Python script, `cloudstorage.py`, to create an S3 bucket named `<student ID>-cloudstorage`.
+we downloaded Python script, `cloudstorage.py`, which contains python boto3 code to traverse current directory and uplode files, but we must modify it to create an S3 bucket named `23803313-cloudstorage`.
 
-When the program traverses the directory starting at the root directory `rootdir`, upload each file onto the S3 bucket. An easy way to upload files is to use the command below:
+When the program traverses the directory starting at the root directory `rootdir`, upload each file onto the S3 bucket using the fucktion upload_file() 
 
 ```
-s3.upload_file()
-```
+import os
+import boto3
+import base64
 
-**NOTE**: Make sure your S3 bucket has the same file structure as shown in `[1] Preparation`.
+ROOT_DIR = './'
+ROOT_S3_DIR = '23803313-cloudstorage'
+
+
+s3 = boto3.client("s3")
+
+bucket_config = {'LocationConstraint': 'ap-northeast-3'} #Replace the region with your allocated region name.
+
+def upload_file(folder_name, file, file_name):
+	s3.upload_file(file, ROOT_S3_DIR, f"{folder_name}/{file_name}")
+	print("Uploading %s" % file)
+
+
+# Main program
+# Insert code to create bucket if not there
+
+try:
+	response=s3.create_bucket(Bucket=ROOT_S3_DIR, CreateBucketConfiguration=bucket_config)
+	print(f"Bucket {ROOT_S3_DIR} created: {response}")
+except Exception as error:
+	print(f"Bucket creation failed: {error}")
+	pass
+
+
+# parse directory and upload files
+
+for dir_name, subdir_list, file_list in os.walk(ROOT_DIR, topdown=True):
+    if dir_name != ROOT_DIR:
+        for fname in file_list:
+            upload_file("%s/" % dir_name[2:], "%s/%s" % (dir_name, fname), fname)
+
+print("done")
+```
+![image](https://github.com/user-attachments/assets/77e64c70-11a5-4f27-b6f0-212278b5b2b8)
+
+We can verify that the bucket and file has been created in the AWS console
+
+![image](https://github.com/user-attachments/assets/154c624d-8d9b-4162-be8a-f6c199eab45a)
+
 
 ### [3] Restore from S3
 
-Create a new program called `restorefromcloud.py` that reads the S3 bucket and writes the contents of the bucket within the appropriate directories. 
+we Create a new program called `restorefromcloud.py` that reads the S3 bucket and writes the contents of the bucket within the appropriate directories. 
+we create a new subdirectry called Restored and place this restorefrom cloud.py file in it.
+```
+import boto3
+import os
 
-**NOTE**: Your local Linux environment should see a copy of the files and the directories from the S3 bucket.
+BUCKET_NAME = '23803313-cloudstorage'  # Replace with your bucket name
+s3 = boto3.resource('s3')
+
+try:
+    # List objects in the specified S3 bucket
+    response = s3.meta.client.list_objects_v2(Bucket=BUCKET_NAME)
+    
+    # Check if 'Contents' key exists in the response
+    if 'Contents' not in response:
+        print(f"No files found in bucket {BUCKET_NAME}.")
+    else:
+        for obj in response['Contents']:
+            s3_key = obj['Key']
+            print(f"Restoring {s3_key} from S3...")
+            
+            # Define the local path where the file will be saved
+            local_path = os.path.join('./', s3_key)
+            local_dir = os.path.dirname(local_path)
+            
+            # Create local directory if it does not exist
+            if not os.path.exists(local_dir):
+                os.makedirs(local_dir)
+            
+            # Download the file from S3 to the local path
+            s3.meta.client.download_file(BUCKET_NAME, s3_key, local_path)
+            print(f"Downloaded {s3_key} to {local_path}")
+            
+    print("Restoration complete.")
+
+except botocore.exceptions.ClientError as error:
+    print(f"An error occurred: {error}")
+
+```
+ the code first creates a boto3 connection then we use list_objects_v2 to get the contents from our bucket.
+then we check for object keys in the content returned byt he function and use that info to create the appropriate directory and download the files. 
+we can confirm by checking the newly created restore directory in has the  copy of the files and the directories from the S3 bucket.
+
+![image](https://github.com/user-attachments/assets/0a3f7e58-b258-4432-bc35-dfe6906fb90a)
+
 
 ### [4] Write information about files to DynamoDB
 
@@ -122,16 +203,27 @@ Then, you need to get the attributes above for each file of the S3 bucket and th
 | Asia Pacific (Singapore) | ap-southeast-1 |
 | Asia Pacific (Sydney)	| ap-southeast-2 |
 
+![image](https://github.com/user-attachments/assets/d87a04bc-d51b-42b8-879c-295635aaad25)
+
 
 ### [5] Scan the table
 
 Use AWS CLI command to scan the created DynamoDB table, and output what you've got. 
+```
+aws dynamodb delete-table --table-name CloudFiles --region ap-northeast-3
+```
+![image](https://github.com/user-attachments/assets/cc8ed6c6-b27c-458a-836b-8f147675c205)
+
 
 ### [6] Delete the table
 
 Use AWS CLI command to delete the table.
 
 **NOTE**: Delete the created S3 bucket from AWS console after the lab is done.
+```
+aws dynamodb delete-table --table-name CloudFiles --region ap-northeast-1
+```
+![image](https://github.com/user-attachments/assets/6c2f929e-8271-4a1c-a1e5-e3efa27dd285)
 
 Lab Assessment:
 
