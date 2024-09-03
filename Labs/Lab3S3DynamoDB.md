@@ -203,6 +203,98 @@ Then, you need to get the attributes above for each file of the S3 bucket and th
 | Asia Pacific (Singapore) | ap-southeast-1 |
 | Asia Pacific (Sydney)	| ap-southeast-2 |
 
+```
+import boto3
+import os
+from datetime import datetime
+BUCKET_NAME = '23803313-cloudstorage'  
+REGION_NAME = 'ap-northeast-3' 
+# Initialize AWS resources
+s3 = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb', region_name=REGION_NAME)  # Modify if using AWS DynamoDB
+# Define the table name
+table_name = 'CloudFiles'
+
+# Create DynamoDB table if it doesn't exist
+existing_tables = dynamodb.meta.client.list_tables()['TableNames']
+if table_name not in existing_tables:
+    table = dynamodb.create_table(
+        TableName=table_name,
+        KeySchema=[
+            {
+                'AttributeName': 'userId',
+                'KeyType': 'HASH'  # Partition key
+            },
+            {
+                'AttributeName': 'fileName',
+                'KeyType': 'RANGE'  # Sort key
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': 'userId',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'fileName',
+                'AttributeType': 'S'
+            }
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 6,
+            'WriteCapacityUnits': 6
+        }
+    )
+    
+    # Wait until the table exists
+    table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+    print(f"Table {table_name} created successfully.")
+else:
+    table = dynamodb.Table(table_name)
+    print(f"Table {table_name} already exists.")
+
+# List objects in the specified S3 bucket
+response = s3.list_objects_v2(Bucket=BUCKET_NAME)
+
+# Check if 'Contents' key exists in the response
+if 'Contents' not in response:
+    print(f"No files found in bucket {BUCKET_NAME}.")
+else:
+    for obj in response['Contents']:
+        s3_key = obj['Key']
+        print(f"Processing {s3_key} from S3...")
+
+        # Fetch file attributes
+        head_response = s3.head_object(Bucket=BUCKET_NAME, Key=s3_key)
+        acl_response = s3.get_object_acl(Bucket=BUCKET_NAME, Key=s3_key)
+
+        # Extract owner information based on region
+        owner_info = acl_response['Owner']
+        owner = owner_info['DisplayName'] if REGION_NAME in ['us-east-1', 'ap-northeast-1', 'ap-southeast-1', 'ap-southeast-2'] else owner_info['ID']
+
+        # Extract permissions
+        permissions = [grant['Permission'] for grant in acl_response['Grants'] if 'Permission' in grant]
+
+        # Define item attributes
+        item = {
+            'userId': '23803313',
+            'fileName': os.path.basename(s3_key),
+            'path': os.path.dirname(s3_key),
+            'lastUpdated': head_response['LastModified'].strftime('%Y-%m-%d %H:%M:%S'),
+            'owner': owner,
+            'permissions': ', '.join(permissions)  # Converting list to string
+        }
+
+        # Insert item into DynamoDB table
+        try:
+            table.put_item(Item=item)
+            print(f"Inserted {s3_key} into DynamoDB.")
+        except Exception as e:
+            print(f"Failed to insert {s3_key} into DynamoDB: {e}")
+
+print("Process complete.")
+```
+
 ![image](https://github.com/user-attachments/assets/d87a04bc-d51b-42b8-879c-295635aaad25)
 
 
