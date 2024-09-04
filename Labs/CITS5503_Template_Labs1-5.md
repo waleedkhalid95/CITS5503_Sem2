@@ -193,7 +193,7 @@ Security groups are critical in AWS as they allow you to define which types of t
 ### [2] Authorize Inbound SSH Traffic
 Next, I configured the security group to allow SSH access by modifying its inbound rules:
 
-```
+```bash
 aws ec2 authorize-security-group-ingress --group-name 23803313-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
 ```
 - '--protocol tcp --port 22': Specifies that TCP traffic on port 22 (SSH) is allowed.
@@ -206,7 +206,7 @@ By configuring SSH access, I ensured I could remotely manage and interact with t
 ### [3] Create a Key Pair and Set Permissions
 To securely connect to our EC2 instance, we create a key pair using:
 
-```
+```bash
 aws ec2 create-key-pair --key-name 23803313-key --query 'KeyMaterial' --output text > 23803313-key.pem
 ```
 
@@ -215,7 +215,7 @@ aws ec2 create-key-pair --key-name 23803313-key --query 'KeyMaterial' --output t
 
 I then secured the key by changing its permissions to read-only for the owner:
 
-```
+```bash
 chmod 400 23803313-key.pem
 ```
 
@@ -226,7 +226,7 @@ This step is crucial because it prevents unauthorized access to the key, ensurin
 ### [4] Launch the EC2 Instance
 Using the AMI ID for the Osaka region, I launched the EC2 instance:
 
-```
+```bash
  aws ec2 run-instances --image-id ami-0a70c5266db4a6202 --security-group-ids 23803313-sg --count 1 --instance-type t2.micro --key-name 23803313-key --query 'Instances[0].InstanceId'
 
  ```
@@ -244,7 +244,7 @@ This command launched the instance and returned an instance ID, confirming the s
 ### [5] Tag the Instance
 To make it easier to identify and manage the instance, I added a descriptive tag:
 
- ```
+ ```bash
   aws ec2 create-tags --resources i-0dcfef96ec413ecca --tags Key=Name,Value=23803313-vm1
  ```
 ![image](https://github.com/user-attachments/assets/50613443-6ef9-4d86-a60f-36324e391364)
@@ -256,7 +256,7 @@ Tags are helpful for organizing resources, especially when managing multiple ins
 ### [6] Retrieve the Public IP Address
 To connect to our instance, we need its public IP address, obtained via:
 
-```
+```bash
 aws ec2 describe-instances --instance-ids i-0dcfef96ec413ecca --query 'Reservations[0].Instances[0].PublicIpAddress'
 ```
 This command queries the instance details and extracts the public IP, 13.208.91.27.
@@ -265,7 +265,7 @@ This command queries the instance details and extracts the public IP, 13.208.91.
 
 ### [7] Connect to the Instance via SSH
 Finally, we connect to the instance using SSH:
-```
+```bash
 ssh -i 23803313-key.pem ubuntu@13.208.91.27"
 ```
 ![image](https://github.com/user-attachments/assets/42851d5a-8d3b-4e82-a78e-f5dbe1b79c42)
@@ -280,7 +280,7 @@ After completing these steps, the instance was visible and manageable through th
 ## EC2 Instance Setup Using Python Boto3
 I automated the EC2 setup process using Python's Boto3 SDK, which allowed for more flexibility and integration into larger automation workflows. Here’s the Python script I used.
 
-```
+```python
 import boto3
 import os
 import subprocess
@@ -377,7 +377,7 @@ except subprocess.CalledProcessError as e:
 Docker allows for containerized applications, simplifying the deployment and management of applications in a consistent environment. To demonstrate Docker, I installed it on the EC2 instance and ran a simple HTTP server
 ### [1] Install Docker
 I installed Docker using the following command
-```
+```bash
 sudo apt install docker.io -y
 ```
 
@@ -387,7 +387,7 @@ This command installs Docker on the instance, enabling container management.
 
 ### [2] Start and Enable Docker
 I started Docker and enabled it to run on boot with the following commands
-```
+```bash
 sudo systemctl start docker
 sudo systemctl enable docker
 docker --version
@@ -410,7 +410,7 @@ To demonstrate Docker’s utility, I built and ran a simple HTTP server containe
   </html>
 ```
 - Created a Dockerfile outside the html directory with:
-```
+```bash
 FROM httpd:2.4
 COPY ./html/ /usr/local/apache2/htdocs/
 ```
@@ -418,7 +418,7 @@ The Dockerfile uses the official HTTPD (Apache) image and copies the contents of
 
 - Build the docker image
 
-```
+```bash
 docker build -t my-apache2 .
 ```
 
@@ -426,7 +426,7 @@ docker build -t my-apache2 .
 
 - Run the container
 
-```
+```bash
 docker run -p 80:80 -dit --name my-app my-apache2
 ```
 This command runs the container, mapping port 80 on the instance to port 80 in the container, allowing me to access the server via the instance's IP address
@@ -441,12 +441,12 @@ This command runs the container, mapping port 80 on the instance to port 80 in t
 
 To check running containers
 
-```
+```bash
 docker ps -a
 ```
 To stop and remove the container
 
-```
+```bash
 docker stop my-app
 docker rm my-app
 ```
@@ -579,7 +579,7 @@ After running this script, the Restored directory was populated with the files a
 ### [4] Write Information About Files to DynamoDB
 
 To store metadata about the files in DynamoDB, I first installed DynamoDB locally using:
-```
+```bash
 mkdir dynamodb
 cd dynamodb
 sudo apt-get install default-jre
