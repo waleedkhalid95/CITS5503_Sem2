@@ -57,11 +57,71 @@ Apply the following policy to the S3 bucket you created in the last lab to allow
 ```
 
 
+```python
+import boto3
+import json
+
+# Initialize the S3 client
+s3 = boto3.client('s3')
+
+# Define the bucket name and policy
+bucket_name = '23803313-cloudstorage'
+policy = {
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Sid": "AllowAllS3ActionsInUserFolderForUserOnly",
+        "Effect": "Deny",
+        "Principal": "*",
+        "Action": "s3:*",
+        "Resource": f"arn:aws:s3:::{bucket_name}/*",
+        "Condition": {
+            "StringNotLike": {
+                "aws:username": "23803313@student.uwa.edu.au"
+            }
+        }
+    }]
+}
+
+# Convert the policy to a JSON string
+policy_json = json.dumps(policy)
+
+# Apply the policy to the bucket
+try:
+    s3.put_bucket_policy(Bucket=bucket_name, Policy=policy_json)
+    print(f"Policy applied to bucket {bucket_name} successfully.")
+except Exception as e:
+    print(f"Failed to apply policy: {e}")
+
+```
+
+![image](https://github.com/user-attachments/assets/78fb279e-c24d-448a-bd14-fe188da2482f)
+
 ### [2] Check whether the script works
 
 Use AWS CLI command and AWS S3 console to display the policy content applied to the S3 bucket. 
 
+```bash
+aws s3api get-bucket-policy --bucket 23803313-cloudstorage
+```
+
+![image](https://github.com/user-attachments/assets/aca1f3b9-6783-4d3d-a891-2dc265ceb2e9)
+
+Access the Bucket Using Your Correct Username
+To test access with your correct username (23803313@student.uwa.edu.au), you can use AWS CLI commands or the AWS S3 console. Since this username is supposed to have access, you should be able to perform actions like listing the bucket contents or downloading files.
+
+```bash
+aws s3 ls s3://23803313-cloudstorage/rootdir/
+```
+
+![image](https://github.com/user-attachments/assets/e5dd8734-4b4a-4719-94f3-ebe95915cc2e)
+
 Test the policy by using a username that is not your to access the folder called `rootdir` and output what you've got. 
+
+```bash
+aws s3 ls s3://23803313-cloudstorage/rootdir/ --profile unauthorized-user
+```
+
+![image](https://github.com/user-attachments/assets/97248206-0a71-46ac-b497-865ba43ce7a1)
 
 
 ## AES Encryption using KMS
