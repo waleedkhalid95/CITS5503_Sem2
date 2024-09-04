@@ -169,31 +169,37 @@ To solidify my environment setup, I created a Python script to display EC2 regio
 <div style="page-break-after: always;"></div>
 
 # Lab 2: Creating an EC2 Instance with AWS CLI and Boto3
-### Summary
-In this lab, we created an EC2 instance on AWS using both the AWS CLI and Python's Boto3 SDK. The objective was to automate the setup of a secure and accessible virtual machine for development purposes. Key tasks included setting up security rules, generating secure access keys, launching the instance, and configuring Docker to run a simple web server. Each step ensures that the environment is secure, accessible, and functional for cloud-based development and testing.
+
+## Summary
+
+In this lab, I created an EC2 instance on AWS using both the AWS CLI and Python's Boto3 SDK. The objective was to automate the setup of a secure and accessible virtual machine for development purposes. The key tasks involved setting up security rules, generating secure access keys, launching the instance, and configuring Docker to run a simple web server. Each step ensured that the environment was secure, accessible, and functional for cloud-based development and testing.
 
 ## EC2 Instance Setup Using AWS CLI
 
 ### [1] Create a Security Group
-We create a security group using:
-```
+
+To start, I created a security group, which acts as a virtual firewall controlling inbound and outbound traffic to the EC2 instance. This was done using the command:
+
+```bash
 aws ec2 create-security-group --group-name 23803313-sg --description "security group for development environment"
 ```
-- '--group-name': Specifies the name of the security group
+- '--group-name': Specifies the name of the security group, making it easy to identify
 - '--description': Describes the purpose of the security group. This security group acts as a virtual firewall to control inbound and outbound traffic for our EC2 instances. The output provides the security group ID, which we need for subsequent steps.
 
 ![image](https://github.com/user-attachments/assets/09a2b62f-df3c-47fa-8ea4-2f85e5ccc530)
 
-Security groups act as virtual firewalls that control traffic to instances. This is essential for defining which types of connections are allowed.
+Security groups are critical in AWS as they allow you to define which types of traffic can reach your EC2 instances. This step generated a security group ID, which I needed for the subsequent steps.
 
 ### [2] Authorize Inbound SSH Traffic
-Next, we authorize SSH access to the EC2 instance by modifying the security group with:
+Next, I configured the security group to allow SSH access by modifying its inbound rules:
 
 ```
 aws ec2 authorize-security-group-ingress --group-name 23803313-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
 ```
-- '--protocol tcp --port 22': Specifies TCP as the protocol and opens port 22 for SSH access.
-- '--cidr 0.0.0.0/0': Allows access from any IP address. This configuration allows secure remote SSH connections to the EC2 instance.
+- '--protocol tcp --port 22': Specifies that TCP traffic on port 22 (SSH) is allowed.
+- '--cidr 0.0.0.0/0': Allows SSH access from any IP address. This setting, while useful for development, should be restricted in production environments to specific IP ranges for enhanced security.
+
+By configuring SSH access, I ensured I could remotely manage and interact with the instance.
 
 ![image](https://github.com/user-attachments/assets/27d744f1-e297-4336-afbb-da10c11bb7e6)
 
@@ -205,17 +211,20 @@ aws ec2 create-key-pair --key-name 23803313-key --query 'KeyMaterial' --output t
 ```
 
 - '--key-name': Specifies the name of the key pair.
-- '--query 'KeyMaterial' --output text > 23803313-key.pem': Extracts the key material and saves it to a .pem file. The private key is essential for SSH access, and we secure the key with:
+- '--query 'KeyMaterial' --output text > 23803313-key.pem': Extracts the key material and saves it to a .pem file. This private key is essential for SSH access.
+
+I then secured the key by changing its permissions to read-only for the owner:
 
 ```
 chmod 400 23803313-key.pem
 ```
-This restricts the file permissions to read-only for the owner, enhancing security.
+
+This step is crucial because it prevents unauthorized access to the key, ensuring that only I can use it to connect to the instance.
 
 ![image](https://github.com/user-attachments/assets/f203ae30-0fc6-4ea0-ac07-72b9b908a1bc)
 
 ### [4] Launch the EC2 Instance
-Using the AMI ID corresponding to our region, we launch an instance with:
+Using the AMI ID for the Osaka region, I launched the EC2 instance:
 
 ```
  aws ec2 run-instances --image-id ami-0a70c5266db4a6202 --security-group-ids 23803313-sg --count 1 --instance-type t2.micro --key-name 23803313-key --query 'Instances[0].InstanceId'
@@ -225,19 +234,24 @@ Instace created i-0dcfef96ec413ecca
 
 ![image](https://github.com/user-attachments/assets/3aec8350-8576-4ef9-b344-9f664f8fde70)
 
-- '--image-id': Specifies the AMI ID for the Osaka region (ami-0a70c5266db4a6202).
-- '--security-group-ids': Associates the instance with the previously created security group.
-- '--instance-type t2.micro': Uses a cost-effective instance type suitable for development environments. The command outputs the instance ID upon successful creation.
+- '--image-id': Specifies the Amazon Machine Image (AMI) ID, which serves as a template for the instance.
+- '--security-group-ids': Associates the instance with the security group created earlier.
+- '--instance-type t2.micro': Specifies a cost-effective instance type suitable for development.
+- '--key-name': Specifies the key pair for SSH access.
+  
+This command launched the instance and returned an instance ID, confirming the successful creation.
 
 ### [5] Tag the Instance
-To identify the instance easily, we add a tag:
+To make it easier to identify and manage the instance, I added a descriptive tag:
+
  ```
   aws ec2 create-tags --resources i-0dcfef96ec413ecca --tags Key=Name,Value=23803313-vm1
  ```
 ![image](https://github.com/user-attachments/assets/50613443-6ef9-4d86-a60f-36324e391364)
 
-- '--resources': Specifies the instance ID.
+- '--resources': Specifies the instance ID to tag.
 - '--tags Key=Name,Value=23803313-vm1': Adds a descriptive tag to the instance. This helps in managing and identifying instances in the AWS console.
+Tags are helpful for organizing resources, especially when managing multiple instances.
 
 ### [6] Retrieve the Public IP Address
 To connect to our instance, we need its public IP address, obtained via:
@@ -256,15 +270,15 @@ ssh -i 23803313-key.pem ubuntu@13.208.91.27"
 ```
 ![image](https://github.com/user-attachments/assets/42851d5a-8d3b-4e82-a78e-f5dbe1b79c42)
 
-The SSH command uses the private key and the instance’s public IP address to establish a secure shell session.
+This command establishes a secure connection to the instance using the private key and public IP address, enabling remote management and interaction.
 
 ### [8] List the Instance in AWS Console
-After completing the above steps, the instance can be managed via the AWS console.
+After completing these steps, the instance was visible and manageable through the AWS Console, where I could monitor and configure it as needed.
 
 ![image](https://github.com/user-attachments/assets/2d83568f-3fc4-47e6-9789-eb175386806d)
 
 ## EC2 Instance Setup Using Python Boto3
-Using Python's Boto3, we automated the same steps programmatically, allowing for greater flexibility and integration into larger automation workflows. The Python script covered creating security groups, setting up key pairs, launching instances, and configuring access, similar to the AWS CLI approach but in a more scriptable format.
+I automated the EC2 setup process using Python's Boto3 SDK, which allowed for more flexibility and integration into larger automation workflows. Here’s the Python script I used.
 
 ```
 import boto3
@@ -345,15 +359,24 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
 ```
+** Code Explanation: **
+- Initialize EC2 Client: boto3.client('ec2') initializes the EC2 client to interact with AWS services.
+- Create Security Group: The script creates a security group using ec2.create_security_group(), which includes a description and group name.
+- Authorize SSH Access: SSH access is enabled using ec2.authorize_security_group_ingress() with TCP protocol and port 22, allowing connections from all IP addresses (0.0.0.0/0).
+- Create Key Pair: A key pair is generated using ec2.create_key_pair(), and the private key material is saved to a .pem file. The file permissions are set to 400 to secure the key.
+- Launch EC2 Instance: The instance is launched with ec2.run_instances(), specifying the AMI ID, security group, instance type, and key name. It outputs the instance ID upon successful creation.
+- Tag Instance: The instance is tagged using ec2.create_tags() to make it identifiable in the AWS console.
+- Retrieve Public IP: The instance's public IP address is obtained with ec2.describe_instances(), which is necessary for connecting via SSH.
+- Connect via SSH: The script attempts to connect to the instance using SSH, automating the login process and enabling direct management of the instance from the terminal.
 
 ![image](https://github.com/user-attachments/assets/653b635c-203d-4166-af9c-633b7b47351a)
 
 ![image](https://github.com/user-attachments/assets/95724b9d-86ea-4326-897b-6f2e5805bf3b)
 
 ## Use Docker Inside a Linux OS
-Docker allows for containerized applications, making it easier to deploy and manage applications consistently.
-To demonstrate Docker, we installed it on the EC2 instance and ran a simple HTTP server
+Docker allows for containerized applications, simplifying the deployment and management of applications in a consistent environment. To demonstrate Docker, I installed it on the EC2 instance and ran a simple HTTP server
 ### [1] Install Docker
+I installed Docker using the following command
 ```
 sudo apt install docker.io -y
 ```
@@ -363,6 +386,7 @@ sudo apt install docker.io -y
 This command installs Docker on the instance, enabling container management.
 
 ### [2] Start and Enable Docker
+I started Docker and enabled it to run on boot with the following commands
 ```
 sudo systemctl start docker
 sudo systemctl enable docker
@@ -374,7 +398,8 @@ Starting Docker ensures the service runs immediately, and enabling it makes Dock
 
 ### [4] Build and Run an HTTPD Container
 
-Create a directory called html, then create an index.html file inside with:
+To demonstrate Docker’s utility, I built and ran a simple HTTP server container:
+- Created a directory called html and added a file index.html with the content
 
 ```
   <html>
@@ -384,14 +409,14 @@ Create a directory called html, then create an index.html file inside with:
     </body>
   </html>
 ```
-Create a Dockerfile outside the html directory:
+- Created a Dockerfile outside the html directory with:
 ```
 FROM httpd:2.4
 COPY ./html/ /usr/local/apache2/htdocs/
 ```
-The server was then accessed via the instance’s IP, demonstrating how Docker simplifies the deployment of applications on cloud instances.
+The Dockerfile uses the official HTTPD (Apache) image and copies the contents of the html directory into the container's web root.
 
-Build a docker image
+- Build the docker image
 
 ```
 docker build -t my-apache2 .
@@ -399,15 +424,16 @@ docker build -t my-apache2 .
 
 ![image](https://github.com/user-attachments/assets/331a755a-35f8-40be-bde6-6cf97188b517)
 
-Run the container
+- Run the container
 
 ```
 docker run -p 80:80 -dit --name my-app my-apache2
 ```
+This command runs the container, mapping port 80 on the instance to port 80 in the container, allowing me to access the server via the instance's IP address
 
 ![image](https://github.com/user-attachments/assets/47f797bc-af2b-41ae-bae0-539f87aef712)
 
-Visit http://localhost to confirm the "Hello World!" message displays.
+- Visit http://localhost to confirm the "Hello World!" message displays.
 
 ![image](https://github.com/user-attachments/assets/8549d00a-5cb6-4ff4-a51c-4b4114f3902e)
 
@@ -424,6 +450,7 @@ To stop and remove the container
 docker stop my-app
 docker rm my-app
 ```
+These commands allow for managing Docker containers, stopping them when they are no longer needed, and cleaning up resources
 
 ![image](https://github.com/user-attachments/assets/a9d48537-6705-465b-8cbe-f3f54ea79a98)
 
