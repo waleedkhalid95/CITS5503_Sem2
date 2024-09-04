@@ -359,7 +359,7 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
 ```
-** Code Explanation: **
+**Code Explanation:**
 - Initialize EC2 Client: boto3.client('ec2') initializes the EC2 client to interact with AWS services.
 - Create Security Group: The script creates a security group using ec2.create_security_group(), which includes a description and group name.
 - Authorize SSH Access: SSH access is enabled using ec2.authorize_security_group_ingress() with TCP protocol and port 22, allowing connections from all IP addresses (0.0.0.0/0).
