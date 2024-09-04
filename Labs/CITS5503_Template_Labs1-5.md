@@ -33,7 +33,7 @@ To configure access to AWS services, I followed these steps:
 6. Clicked **Create access key**, which generated a confirmation screen showing the new access key ID and secret access key.
 
    ![Access Key Creation Confirmation](https://github.com/user-attachments/assets/765ca5d6-ddd1-416c-9348-e79a4750eeab)
-
+   
 7. I saved the access key and secret key securely, as they are crucial for authenticating CLI commands to AWS services.
 
 ## Setting Up a Linux OS
