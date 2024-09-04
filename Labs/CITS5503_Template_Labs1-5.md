@@ -359,7 +359,9 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
 ```
+
 **Code Explanation:**
+
  - Initialize EC2 Client: boto3.client('ec2') initializes the EC2 client to interact with AWS services.
  - Create Security Group: The script creates a security group using ec2.create_security_group(), which includes a description and group name.
  - Authorize SSH Access: SSH access is enabled using ec2.authorize_security_group_ingress() with TCP protocol and port 22, allowing connections from all IP addresses (0.0.0.0/0).
@@ -508,7 +510,9 @@ for dir_name, subdir_list, file_list in os.walk(ROOT_DIR, topdown=True):
             upload_file("%s/" % dir_name[2:], "%s/%s" % (dir_name, fname), fname)
 print("done")
 ```
+
 **Code Explanation:**
+
  - boto3.client("s3") initializes an S3 client, which allows the script to interact with AWS S3.
  - The script attempts to create an S3 bucket named 23803313-cloudstorage with the specified region (ap-northeast-3).
  - The create_bucket method includes a CreateBucketConfiguration parameter, which specifies the bucket's region using 'LocationConstraint'.
@@ -564,7 +568,9 @@ try:
 except botocore.exceptions.ClientError as error:
     print(f"An error occurred: {error}")
 ```
+
 **Code Explanation**
+
  - boto3.resource('s3') initializes an S3 resource, providing a higher-level interface for interacting with S3.
  - s3.meta.client.list_objects_v2(Bucket=BUCKET_NAME) retrieves the list of objects in the specified S3 bucket.
  - The script checks if the Contents key exists in the response to ensure files are available for restoration.
@@ -680,7 +686,9 @@ else:
 
 print("Process complete.")
 ```
+
 **Code Explanation:**
+
  - DynamoDB Resource Initialization: boto3.resource('dynamodb', region_name=REGION_NAME) initializes a DynamoDB resource pointing to the specified region.
  - Table Creation: The script checks if the table CloudFiles exists using list_tables().
  - If the table does not exist, it creates one with dynamodb.create_table() using userId as the partition key and fileName as the sort key. Both keys are of type string (S).
