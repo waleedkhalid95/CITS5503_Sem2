@@ -360,14 +360,14 @@ except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
 ```
 **Code Explanation:**
-- Initialize EC2 Client: boto3.client('ec2') initializes the EC2 client to interact with AWS services.
-- Create Security Group: The script creates a security group using ec2.create_security_group(), which includes a description and group name.
-- Authorize SSH Access: SSH access is enabled using ec2.authorize_security_group_ingress() with TCP protocol and port 22, allowing connections from all IP addresses (0.0.0.0/0).
-- Create Key Pair: A key pair is generated using ec2.create_key_pair(), and the private key material is saved to a .pem file. The file permissions are set to 400 to secure the key.
-- Launch EC2 Instance: The instance is launched with ec2.run_instances(), specifying the AMI ID, security group, instance type, and key name. It outputs the instance ID upon successful creation.
-- Tag Instance: The instance is tagged using ec2.create_tags() to make it identifiable in the AWS console.
-- Retrieve Public IP: The instance's public IP address is obtained with ec2.describe_instances(), which is necessary for connecting via SSH.
-- Connect via SSH: The script attempts to connect to the instance using SSH, automating the login process and enabling direct management of the instance from the terminal.
+ - Initialize EC2 Client: boto3.client('ec2') initializes the EC2 client to interact with AWS services.
+ - Create Security Group: The script creates a security group using ec2.create_security_group(), which includes a description and group name.
+ - Authorize SSH Access: SSH access is enabled using ec2.authorize_security_group_ingress() with TCP protocol and port 22, allowing connections from all IP addresses (0.0.0.0/0).
+ - Create Key Pair: A key pair is generated using ec2.create_key_pair(), and the private key material is saved to a .pem file. The file permissions are set to 400 to secure the key.
+ - Launch EC2 Instance: The instance is launched with ec2.run_instances(), specifying the AMI ID, security group, instance type, and key name. It outputs the instance ID upon successful creation.
+ - Tag Instance: The instance is tagged using ec2.create_tags() to make it identifiable in the AWS console.
+ - Retrieve Public IP: The instance's public IP address is obtained with ec2.describe_instances(), which is necessary for connecting via SSH.
+ - Connect via SSH: The script attempts to connect to the instance using SSH, automating the login process and enabling direct management of the instance from the terminal.
 
 ![image](https://github.com/user-attachments/assets/653b635c-203d-4166-af9c-633b7b47351a)
 
@@ -509,13 +509,13 @@ for dir_name, subdir_list, file_list in os.walk(ROOT_DIR, topdown=True):
 print("done")
 ```
 **Code Explanation:**
-- boto3.client("s3") initializes an S3 client, which allows the script to interact with AWS S3.
-- The script attempts to create an S3 bucket named 23803313-cloudstorage with the specified region (ap-northeast-3).
-- The create_bucket method includes a CreateBucketConfiguration parameter, which specifies the bucket's region using 'LocationConstraint'.
-- upload_file(folder_name, file, file_name): This function uploads files to the S3 bucket, preserving the directory structure.
-- It uses s3.upload_file(file, ROOT_S3_DIR, f"{folder_name}/{file_name}"), where file is the local file path. ROOT_S3_DIR is the bucket name. f"{folder_name}/{file_name}" specifies the target path in the bucket, ensuring the folder structure is maintained.
-- The script uses os.walk() to traverse ROOT_DIR, identifying files and directories. It uploads each file using the upload_file function.
-- This approach ensures all files are uploaded to the S3 bucket, replicating the local directory structure.
+ - boto3.client("s3") initializes an S3 client, which allows the script to interact with AWS S3.
+ - The script attempts to create an S3 bucket named 23803313-cloudstorage with the specified region (ap-northeast-3).
+ - The create_bucket method includes a CreateBucketConfiguration parameter, which specifies the bucket's region using 'LocationConstraint'.
+ - upload_file(folder_name, file, file_name): This function uploads files to the S3 bucket, preserving the directory structure.
+ - It uses s3.upload_file(file, ROOT_S3_DIR, f"{folder_name}/{file_name}"), where file is the local file path. ROOT_S3_DIR is the bucket name. f"{folder_name}/{file_name}" specifies the target path in the bucket, ensuring the folder structure is maintained.
+ - The script uses os.walk() to traverse ROOT_DIR, identifying files and directories. It uploads each file using the upload_file function.
+ - This approach ensures all files are uploaded to the S3 bucket, replicating the local directory structure.
 
 Upon running the script, the directory structure from rootdir was replicated in the S3 bucket, with files correctly uploaded.
 
@@ -565,12 +565,12 @@ except botocore.exceptions.ClientError as error:
     print(f"An error occurred: {error}")
 ```
 **Code Explanation**
-- boto3.resource('s3') initializes an S3 resource, providing a higher-level interface for interacting with S3.
-- s3.meta.client.list_objects_v2(Bucket=BUCKET_NAME) retrieves the list of objects in the specified S3 bucket.
-- The script checks if the Contents key exists in the response to ensure files are available for restoration.
-- For each file (s3_key) in the bucket, the script constructs the local path where the file will be saved using os.path.join('./', s3_key).
-- If the necessary directories do not exist (local_dir), they are created using os.makedirs(local_dir).
-- Files are downloaded from S3 to the local path with s3.meta.client.download_file(BUCKET_NAME, s3_key, local_path), replicating the original directory structure.
+ - boto3.resource('s3') initializes an S3 resource, providing a higher-level interface for interacting with S3.
+ - s3.meta.client.list_objects_v2(Bucket=BUCKET_NAME) retrieves the list of objects in the specified S3 bucket.
+ - The script checks if the Contents key exists in the response to ensure files are available for restoration.
+ - For each file (s3_key) in the bucket, the script constructs the local path where the file will be saved using os.path.join('./', s3_key).
+ - If the necessary directories do not exist (local_dir), they are created using os.makedirs(local_dir).
+ - Files are downloaded from S3 to the local path with s3.meta.client.download_file(BUCKET_NAME, s3_key, local_path), replicating the original directory structure.
 
 After running this script, the Restored directory was populated with the files and structure from the S3 bucket, successfully restoring the original setup.
 
@@ -681,14 +681,14 @@ else:
 print("Process complete.")
 ```
 **Code Explanation:**
-- DynamoDB Resource Initialization: boto3.resource('dynamodb', region_name=REGION_NAME) initializes a DynamoDB resource pointing to the specified region.
-- Table Creation: The script checks if the table CloudFiles exists using list_tables().
-- If the table does not exist, it creates one with dynamodb.create_table() using userId as the partition key and fileName as the sort key. Both keys are of type string (S).
-- The ProvisionedThroughput is set with read and write capacity units.
-- A waiter is used to ensure the table is fully created before proceeding.
-- Fetching File Metadata:The script lists objects in the S3 bucket using list_objects_v2() and retrieves metadata using head_object() and access permissions with get_object_acl().
-- It extracts the owner's name or ID based on the region and compiles permissions into a string.
-- Inserting Metadata into DynamoDB: Metadata for each file is structured into an item dictionary and inserted into the CloudFiles table using put_item().
+ - DynamoDB Resource Initialization: boto3.resource('dynamodb', region_name=REGION_NAME) initializes a DynamoDB resource pointing to the specified region.
+ - Table Creation: The script checks if the table CloudFiles exists using list_tables().
+ - If the table does not exist, it creates one with dynamodb.create_table() using userId as the partition key and fileName as the sort key. Both keys are of type string (S).
+ - The ProvisionedThroughput is set with read and write capacity units.
+ - A waiter is used to ensure the table is fully created before proceeding.
+ - Fetching File Metadata:The script lists objects in the S3 bucket using list_objects_v2() and retrieves metadata using head_object() and access permissions with get_object_acl().
+ - It extracts the owner's name or ID based on the region and compiles permissions into a string.
+ - Inserting Metadata into DynamoDB: Metadata for each file is structured into an item dictionary and inserted into the CloudFiles table using put_item().
 
 ![image](https://github.com/user-attachments/assets/d87a04bc-d51b-42b8-879c-295635aaad25)
 
