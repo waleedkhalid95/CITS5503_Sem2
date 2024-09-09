@@ -117,9 +117,7 @@ aws s3 ls s3://23803313-cloudstorage/rootdir/
 
 Test the policy by using a username that is not your to access the folder called `rootdir` and output what you've got. 
 
-```bash
-aws s3 ls s3://23803313-cloudstorage/rootdir/ --profile unauthorized-user
-```
+Ask friend to access 
 
 ![image](https://github.com/user-attachments/assets/97248206-0a71-46ac-b497-865ba43ce7a1)
 
