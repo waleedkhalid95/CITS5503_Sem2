@@ -37,7 +37,6 @@ Apply the following policy to the S3 bucket you created in the last lab to allow
 
 **NOTE**: in the policy below, you should replace `<your_s3_bucket>` with the S3 bucket you created and `<studentnumber>` with your own student number. You can use AWS console to create the S3 bucket in this lab that has the same contents as the bucket in the last lab.
 
-
 ```
 {
   "Version": "2012-10-17",
@@ -55,7 +54,6 @@ Apply the following policy to the S3 bucket you created in the last lab to allow
   }]
 }
 ```
-
 
 ```python
 import boto3
@@ -119,7 +117,7 @@ Test the policy by using a username that is not your to access the folder called
 
 Ask friend to access 
 
-![image](https://github.com/user-attachments/assets/97248206-0a71-46ac-b497-865ba43ce7a1)
+![image](https://github.com/user-attachments/assets/a7b53aae-db90-4b5d-b32d-dd6d8bf4bc1a)
 
 
 ## AES Encryption using KMS
@@ -213,16 +211,29 @@ Update the script to attach the following policy to the key.
 ### [3] Check whether the script works
 
 Use the AWS KMS console to test whether your username is the key administrator and key user.
- 
+
+ ![image](https://github.com/user-attachments/assets/ba9a2e51-d557-4f33-85c4-68659ea575fa)
+
 **NOTE**: After you log into the console, you perform the test by showing the policy you create, i.e., which ARN is the key administrator and which ARN is the key user.
+
+![image](https://github.com/user-attachments/assets/5d480602-0076-4f53-87f6-ffd95f6e21ae)
+
 
 ### [4] Use the created KMS key for encryption/decryption
 
 Write a Python script where each file from the S3 bucket is encrypted and then decrypted via the created KMS key. Both encrypted and decrypted files will be in the same folder as the original file. 
 
+![image](https://github.com/user-attachments/assets/34e8ff52-27df-44f3-83d6-a2cfae83cf47)
+
+![image](https://github.com/user-attachments/assets/ab9587f5-12ae-47d7-853b-b8f555ae113d)
+
+
 ### [5] Apply `pycryptodome` for encryption/decryption
 
 Write another Python script that uses the python library `pycryptodome` to encrypt and decrypt each file in the S3 bucket. Both encrypted and decrypted files will be in the same folder as the original file.
+
+![image](https://github.com/user-attachments/assets/70d145c5-8096-4b2b-b24b-381128dd5ec7)
+
 
 For encryption/decryption, refer to the example code from [fileencrypt.py](https://github.com/zhangzhics/CITS5503_Sem2/blob/master/Labs/src/fileencrypt.py)
 
