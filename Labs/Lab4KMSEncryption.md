@@ -234,8 +234,11 @@ Write another Python script that uses the python library `pycryptodome` to encry
 
 ![image](https://github.com/user-attachments/assets/70d145c5-8096-4b2b-b24b-381128dd5ec7)
 
+![image](https://github.com/user-attachments/assets/b8798627-2006-476a-aa0c-f710a746f787)
 
-For encryption/decryption, refer to the example code from [fileencrypt.py](https://github.com/zhangzhics/CITS5503_Sem2/blob/master/Labs/src/fileencrypt.py)
+![image](https://github.com/user-attachments/assets/8dc4886d-bbb0-40f0-b51a-db9f2b4081f0)
+
+
 
 **NOTE**: Delete the created S3 bucket and KMS key from AWS console after the lab is done.
 
