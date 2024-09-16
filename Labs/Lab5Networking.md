@@ -1,71 +1,5 @@
-# Practical Worksheet 5
+# lab 5
 
-Version: 1.1 Date: 28/08/2018 Author: David Glance
-
-Date: 21/07/2023 Updated by Zhi Zhang
-
-## Learning Objectives
-
-1. Networking and NAT
-2. Setting up an Application Load Balancer
-
-Technologies Covered
-
-* Ubuntu
-* AWS
-* AWS ELB
-* Networking
-* NAT
-* Python/Boto scripts
-* VirtualBox
-
-**NOTE**: please use your Linux environment – if you do it from any other OS (e.g., Windows, Mac – some unknow issues might occur)
-
-## Background
-
-The aim of this lab is to write a program that will:
-
-[1] Understand how to configure different network arrangements to gain and control access to computers and other networked resources
-
-[2] Understand IP addressing and CIDR and the meaning of TCP and UDP ports
-
-## Networking
-
-**Optional**: Configure inbound IP on your VM (Unmarked)
-
-This can be done in a number of ways, but we are going to use NAT port mapping. When a VM is created, it defaults to creating a single NAT interface. Here, VirtualBox is used as an example.
-
-[1] Turn off a specific VM you want to configure.
-
-[2] In the VirtualBox Manager, select the VM, click `Settings` and then `Network`. Choose Adapter 1 that should have been configured as NAT. Click on `Advanced` and then `Port Forwarding`. Set up 1 rule:
-   Use the host IP 127.0.0.1 and host port 2222 and map that to Guest Port 22
-
-[3] You can test the NAT'd port by seeing if you can access it from your host OS. Enable SSH to the VM by installing **sshd** as follows:
-
-```
-sudo apt install tasksel
-sudo tasksel install openssh-server
-```
-
-start the ssh service by:
-
-```
-sudo service ssh start
-```
-
-you can stop it using:
-
-```
- sudo service ssh stop
- ```
-
-To SSH to the VM, open a terminal on your host OS (or use Putty from Windows) and SSH as
-
-```
-ssh -p 2222 <usermame>@127.0.0.1
-```
-
-You should be prompted for your password
 
 ## Application Load Balancer
 
@@ -73,7 +7,7 @@ The aim of this part of the lab is to create an application load balancer and lo
 
 ### [1] Create 2 EC2 instances
 
-Write a Python Boto3 script to create 2 EC2 instances (the instance type can be `t2.micro` or `t3.micro`) in two different availability zones (name the instances following the format: \<student number\>-vm1 and \<student number\>-vm2) in the region mapped to your student number. In this script, a security group should be created to authorise inbound traffic for HTTP and SSH, which will be used by the following steps. 
+Write a Python Boto3 script to create 2 EC2 instances (the instance type can be `t3.micro`) in two different availability zones (name the instances following the format: 23803313-vm1 and 23803313-vm2) in the region mapped to your student number. In this script, a security group should be created to authorise inbound traffic for HTTP and SSH, which will be used by the following steps. 
 
 **NOTE**: Regarding your region name, find it in the table below based on your student number (If you cannot find your region name, it means you enrolled late and you should send an email to `cits5503-pmc@uwa.edu.au` requesting your region name.).
 
@@ -111,11 +45,55 @@ Third, register targets in the target group.
 Last, create a listener with a default rule Protocol: HTTP and Port 80
 forwarding on to the target group.
 
+![image](https://github.com/user-attachments/assets/d8ed2b3e-1ff5-449d-95f8-158aa6da665e)
+
+checking console and we can see that the instance is created
+
+![image](https://github.com/user-attachments/assets/9620cf6e-99da-403e-8765-a03b4758a389)
+
+load balancer is also created
+![image](https://github.com/user-attachments/assets/874d2d5a-df39-4309-b0c2-f8cd71cf8749)
+
 ### [3] Test the Application Load Balancer
 
-Try and access each EC2 instance using its public IP address in a browser. The load balancer is expected not to work at the moment, because Apache 2 is not installed in the instance. To make it work, follow the steps below:
+Try and access each EC2 instance using its public IP address in a browser. The load balancer is expected not to work at the moment, because Apache 2 is not installed in the instance. 
 
-First, ssh to each of the two instances. If you can't make it, try [here](https://bobbyhadz.com/blog/aws-ssh-permission-denied-publickey).
+i checked the console for the public ip of the instances 
+
+![image](https://github.com/user-attachments/assets/c3ee221e-4018-446f-97d6-c7d2fd87ad49)
+
+![image](https://github.com/user-attachments/assets/35fd70e9-9826-44cc-9ad0-46675f9e3d53)
+
+13.208.252.206 for 23803313-vm1
+15.152.119.216 for 23803313-vm2
+
+hewever we cannot access them
+
+![image](https://github.com/user-attachments/assets/64253bb9-6f19-4c10-a0a6-248cd38a1e89)
+
+![image](https://github.com/user-attachments/assets/ff0ef7e6-9328-4f50-8896-50014283bff0)
+
+To make it work, follow the steps below:
+
+First, ssh to each of the two instances. 
+```bash
+ssh -i "23803313-key.pem" ubuntu@13.208.252.206
+ssh -i "23803313-key.pem" ubuntu@15.152.119.216
+```
+however we get an permission denied error
+
+then we use the private key we created earlier and the public dns to create the ssh
+```bash
+ssh -i "23803313-key.pem" ubuntu@ec2-13-208-252-206.ap-northeast-3.compute.amazonaws.com
+ssh -i "23803313-key.pem" ubuntu@ec2-15-152-119-216.ap-northeast-3.compute.amazonaws.com
+```
+
+![image](https://github.com/user-attachments/assets/13b24fb3-b026-4bc9-b2f0-7fe65b889031)
+
+![image](https://github.com/user-attachments/assets/ad76fc5e-2314-4577-bfc6-0861bd08023c)
+
+
+If you can't make it, try [here](https://bobbyhadz.com/blog/aws-ssh-permission-denied-publickey).
 
 Second, update each instance:
 
@@ -123,15 +101,24 @@ Second, update each instance:
 sudo apt-get update
 ```
 
+![image](https://github.com/user-attachments/assets/87380f27-3d28-450a-80d8-c3c29e2e4800)
+
 Third, install apache2 in each instance:
 
 ```
 sudo apt install apache2
 ```
+![image](https://github.com/user-attachments/assets/3ee76eac-0ce1-45a3-bf63-21e12300c6ba)
 
 Fourth, edit the `<title>` and `</title>` tags inside the `/var/www/html/index.html` file to show the instance name.
+![image](https://github.com/user-attachments/assets/25fc2b4d-5707-4b14-99e6-7a199e6c3447)
 
 Last, use a browser from your host OS to access each instance by their respective IP address and see if you can get an Apache web page that shows your instance name. Output what you've got. If you are using the University network, it is likely that you cannot access the installed apache2. To address this issue, you may switch to a non-university network.
+
+![image](https://github.com/user-attachments/assets/30c7b93c-0a5b-4f40-9045-4c401d68ce19)
+
+![image](https://github.com/user-attachments/assets/5c16f4df-c605-4fad-904d-22a36922a758)
+
 
 **NOTE**: Delete all the created AWS resources from AWS console after the lab is done.
 
