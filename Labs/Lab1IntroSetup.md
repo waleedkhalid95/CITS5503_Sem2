@@ -1,178 +1,168 @@
-# Practical Worksheet 1 Version: 1.2
+﻿<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
 
-Date: 30/07/2020 Author: David Glance
+  <h2>Labs 1-5</h2>
+  
+  <p>Student ID: 23803313</p>
+  <p>Student Name: Waleed Khalid Siraj</p>
 
-Date: 24/07/2024 Updated by Zhi Zhang
 
-## Learning Objectives
-
-1. Register for an AWS account and explore the user interface
-2. Obtain API keys and secret
-3. Install a recent VM-based Linux OS, e.g., Ubuntu 20.04 LTS
-4. On the Ubuntu 20.04 LTS instance
-5. Install AWS CLI on VM
-6. Install a virtual environment with Python 3.6
-7. Configure the AWSCLI environment with API details and default region
-8. Verify awscli is working and write a python boto script to emulate a awscli command
-
-## Technologies Covered
-
-* Ubuntu
-
-* AWS
-
-* VirtualBox Python/Boto/awscli/bash scripts
-
-**NOTE**: please use your Linux environment – if you do it from any other OS (e.g., Windows, Mac – some unknow issues might occur)
-
-## AWS Accounts and Log In
-### [1] Log into an IAM user account created for you on AWS.
-
-Your username is <student number>@student.uwa.edu.au. Password details will be provided separately.
-
-The login is here: https://489389878001.signin.aws.amazon.com/console, where 489389878001 is the account root user id.
-
-You must change your password after login.
-
-Alternatively, you can create your own owner account using your own credit card and utilise free resource tiers on AWS.
-
-### [2] Search and open Identity Access Management
-
-Click on your user account and click the Security Credentials tab: create access key and make a note of the Access key ID and the secret access key – you will need these for programmatic access to resources.
-
-<div class="alert alert-info" style="font-size:100%">
-<b>NOTE:</b> You should treat the Access key ID and secret carefully. If stolen, these details allow someone to create large numbers of resources and do bad things with the user account. You should bear the incurred costs.
 </div>
 
-## Set up recent Linux OSes
+# Lab 1: AWS Setup and Environment Configuration
 
-**NOTE**: You have multiple options for the setup, for example, Windows WSL with recommended Ubuntu OS 20.04 LTS, and Virtual Machine Manager (e.g., VirtualBox, UTM and VMWare) with recommended Ubuntu OS 20.04 LTS. If you have already installed a recent Linux OS, you don't need to re-install it and instead attach appropriate screenshots and description for your write-up (other Linux distributions such as recent Kali Linux should be fine). 
+In this lab, I set up an AWS environment by configuring IAM access, installing necessary packages on a Linux OS, and verifying the setup with various tests. The goal was to ensure that my environment is fully prepared for interacting with AWS services via the command line and Python scripts.
 
-For Windows/MacOS (non-M1) users, please refer to **2.1** in the link below. For M1/M2 etc. MacBook users, please refer to **2.2** in the link.
+## AWS Account and Log in
 
-[https://uwacyber.gitbook.io/cits1003/cits1003-labs/setting-up-your-laptop](https://uwacyber.gitbook.io/cits1003/cits1003-labs/lab-1-setting-up-your-laptop)
+### [1] Log into an IAM User Account on AWS
 
-For Windows users, WSL is also good and detailed below:
+First, I logged into my IAM user account by navigating to the [AWS Console](https://489389878001.signin.aws.amazon.com/console). Using my student email as the username and the provided password, I accessed the AWS Management Console, which serves as the primary interface for managing AWS services.
 
-[https://canonical-ubuntu-wsl.readthedocs-hosted.com/en/latest/guides/install-ubuntu-wsl2](https://canonical-ubuntu-wsl.readthedocs-hosted.com/en/latest/guides/install-ubuntu-wsl2)
+### [2] Search and Open Identity Access Management (IAM)
 
+To configure access to AWS services, I followed these steps:
 
-**Optional:** If you want to run the VirtualBox environment in full screen:
+1. Clicked on my profile at the top right corner of the AWS Console.
+2. Navigated to **Security Credentials**.
+3. Scrolled down to the **Access Keys** section and clicked on **Create access key** to generate new access credentials.
+4. Selected the **CLI** option, which configures the access key for use with command-line interfaces, essential for managing AWS resources programmatically.
 
-[https://askubuntu.com/questions/1230797/ubuntu-20-04-vm-always-resizes-screen-to-default-size-when-booting](https://askubuntu.com/questions/1230797/ubuntu-20-04-vm-always-resizes-screen-to-default-size-when-booting)
+   ![Access Key Best Practices](https://github.com/user-attachments/assets/a67ed185-d7b2-4970-997a-699c7127e113)
 
-**Optional:** If you are using VirtualBox and have any issues with copy-paste from your host machine to your VM, you should enable clipboard copying from the Devices menu of VirtualBox (Settings > General > Advance > Shared Clipboard > Bidirectional). You will need to run and install the VirtualBox Guest Additions first from the same menu (On Ubuntu 20.04, you should install build tools first `sudo apt install linux-headers-$(uname -r) build-essential dkms -y`
+5. Set a description tag to help identify the purpose of this access key.
+6. Clicked **Create access key**, which generated a confirmation screen showing the new access key ID and secret access key.
 
-## Install Linux packages
+   ![Access Key Creation Confirmation](https://github.com/user-attachments/assets/765ca5d6-ddd1-416c-9348-e79a4750eeab)
+   
+7. I saved the access key and secret key securely, as they are crucial for authenticating CLI commands to AWS services.
 
-**NOTE**: If you have already installed AWS CLI, Python 3.8.x, and Python Boto3 library, you don't need to re-install it and instead attach relevant evidence for your write-up.
+## Setting Up a Linux OS
+
+To establish a working environment compatible with AWS tools, I set up a virtual machine with the following steps:
+
+1. **Downloaded and installed VMware for Windows** to run a virtual environment.
+2. **Downloaded Kali Linux for VMware** and extracted the downloaded 7z file, which contains the necessary files to boot Kali Linux on VMware.
+3. **Opened VMware**:
+   - Clicked on **File** in the top menu and selected **Open**.
+   - Located and opened the VMX file for Kali Linux from the extracted directory.
+
+   ![Opening Kali Linux VMX File](https://github.com/user-attachments/assets/3fb96208-005a-461f-8940-8272ac592ff0)
+
+4. **Edited Virtual Machine Settings**:
+   - Adjusted the settings to allocate 8GB of memory, 4 processor cores, a 30GB hard disk, and set up a NAT network for internet connectivity.
+5. **Powered on the Virtual Machine** and logged into Kali Linux using the default credentials provided.
+
+This setup allowed me to create a dedicated Linux environment to work with AWS services and related tools effectively.
+
+## Installing Linux Packages
 
 ### [1] Install Python 3.8.x
 
-The recent Ubuntu versions such as 20.04 LTS have Python 3.8.x installed. You should update the packages
-to obtain the latest version:
+To ensure compatibility with the latest tools and libraries, I installed Python 3.8.x:
 
-```
-sudo apt update
-sudo apt -y upgrade
-```
+1. Opened the terminal and ran the following commands:
+   - `"sudo apt update"`: This command updates the package lists to fetch the latest information about available packages and their dependencies.
+   - `"sudo apt -y upgrade"`: This upgrades the installed packages to their latest versions, ensuring that the system is up-to-date.
 
-To check the latest version:
-```
-python3 -V
-```
+   ![Updating and Upgrading Packages](https://github.com/user-attachments/assets/d27e790a-a68e-4c5e-9dfb-e74cbc5b3165)
 
-Now we need to install `pip3`, which is a tool that will allow us to install and manage python libraries.
-```
-sudo apt install -y python3-pip
-```
+2. Checked the installed Python version and installed pip (Python’s package installer):
+   - `"python3.8 --version"`: Verified the Python version to ensure Python 3.8.x is installed.
+   - `"sudo apt install python3-pip"`: Installed pip for Python 3, which is necessary for managing Python packages.
 
-Python packages can be installed by: `pip3 install package_name`
+   ![Checking Python Version and Installing Pip](https://github.com/user-attachments/assets/bc9ac7be-8b8f-46d1-ad1b-c75edbce2f6a)
 
+### [2] Install AWS CLI
 
-### [2] Install awscli
+To interact with AWS services from the command line, I installed the AWS CLI:
 
-```
-sudo apt install awscli
-```
+1. Ran `"sudo apt install awscli"` to install AWS CLI version 1, which provides a unified command line interface to manage AWS services.
+2. Upgraded AWS CLI to the latest version using `"pip3 install awscli --upgrade"`, ensuring access to the latest features and improvements.
 
-Then, 
+   ![Installing and Upgrading AWS CLI](https://github.com/user-attachments/assets/2a36e5ba-13ec-4b83-a50d-ad4a38bf6058)
 
-```
-pip3 install awscli --upgrade
-```
+### [3] Configure AWS CLI
 
-Alternatively:
+Configured the AWS CLI to use my IAM credentials and region:
 
-```
-sudo snap install aws-cli --classic
-```
+1. Ran `"aws configure"` to start the configuration process.
+2. Entered the access key ID and secret access key that I had saved earlier.
+3. Set the default region to `"ap-northeast-3"` based on my student ID range, which aligns with my geographic location and reduces latency.
+4. Set the default output format to `"json"` to ensure data is returned in a readable format for automation scripts.
 
-### [3] Configure AWS
+   ![Configuring AWS CLI](https://github.com/user-attachments/assets/2fac505e-644f-49f8-ae4f-e6616dc18837)
 
-After typing the command below:
+### [4] Install Boto3
 
-```
-aws configure
-```
-You should see an output like this:
+Boto3 is the AWS SDK for Python, enabling Python developers to write software that makes use of Amazon services like S3 and EC2:
 
-```
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-Default region name [None]: ap-southeast-2
-Default output format [None]: json
-```
+1. Installed Boto3 using `"pip3 install boto3"`, which allows me to manage AWS services directly from Python scripts.
 
-Replace the placeholder values above with your own AWS Access Key, AWS Secret Access Key and default region name.
+## Testing the Installed Environment
 
-**NOTE**: Regarding your region name, find it in the table below based on your student number (If you cannot find your region name, it means you enrolled late and you should send an email to `cits5503-pmc@uwa.edu.au` requesting your region name.).
+### [1] Test the AWS Environment
 
-| Student Number | Region | Region Name | ami id |
-| --- | --- | --- | --- |
-| 20666666 – 22980000 | US East (N. Virginia) |	us-east-1 |	ami-0a0e5d9c7acc336f1 |
-| 22984000 – 23370000 | Asia Pacific (Tokyo)	| ap-northeast-1	| ami-0162fe8bfebb6ea16 |
-| 23400000 – 23798000 | Asia Pacific (Seoul)	| ap-northeast-2	| ami-056a29f2eddc40520 |
-| 23799000 – 23863700 | Asia Pacific (Osaka)	| ap-northeast-3	| ami-0a70c5266db4a6202 |
-| 23864000 – 23902200 | Asia Pacific (Mumbai)	| ap-south-1	| ami-0c2af51e265bd5e0e |
-| 23904000 – 23946000 | Asia Pacific (Singapore)	| ap-southeast-1	| ami-0497a974f8d5dcef8 |
-| 23946100 – 24024000 | Asia Pacific (Sydney)	| ap-southeast-2	| ami-0375ab65ee943a2a6 |
-| 24025000 – 24071000 | Canada (Central)	| ca-central-1	| ami-048ddca51ab3229ab |
-| 24071100 – 24141000 | Europe (Frankfurt)	| eu-central-1	| ami-07652eda1fbad7432 |
-| 24143000 – 24700000 | Europe (Stockholm)	| eu-north-1	| ami-07a0715df72e58928 |
+To verify that AWS CLI was correctly configured, I tested it by listing available EC2 regions:
+
+1. Ran `"aws ec2 describe-regions --output table"`, which lists all regions where EC2 services are available, formatted as a table for easy readability.
+
+   ![Testing AWS Environment with EC2 Regions](https://github.com/user-attachments/assets/5871561f-d577-4389-942c-025cc694079e)
+
+### [2] Test the Python Environment
+
+To ensure the Python environment was set up correctly and could interact with AWS services, I wrote a short script to list EC2 regions:
+
+1. Imported Boto3 and created an EC2 client:
+   - `"import boto3"`: Imports the Boto3 library for AWS interaction.
+   - `"ec2 = boto3.client('ec2')"`: Creates an EC2 client object for interacting with the EC2 service.
+   
+2. Retrieved the list of regions and printed it:
+   - `"response = ec2.describe_regions()"`: Calls the `describe_regions` method on the EC2 client to fetch available regions.
+   - `"print(response)"`: Outputs the response, confirming that Python can successfully interact with AWS services.
+
+   ![Testing Python Environment](https://github.com/user-attachments/assets/9c8fa783-89fe-4e3e-a721-8f2cf731033a)
 
 
-### [4] Install boto3
+### [3] Write a Python Script
 
-```
-pip3 install boto3
-```
+To solidify my environment setup, I created a Python script to display EC2 regions in a formatted table:
 
-## Test the installed environment
+1. **Created a folder on the Desktop named `cloud-lab`.**
+2. **Created an empty file named `lab1.py` and added the following Python script:**
 
-### [1] Test the AWS environment
+   ```python
+   import boto3
+   import pandas as pd
+   from tabulate import tabulate
 
-```
-aws ec2 describe-regions --output table
-```
+   ec2 = boto3.client('ec2')
+   response = ec2.describe_regions()
+   regions = response['Regions']
 
-### [2] Test the python environment
+   df = pd.DataFrame(regions, columns=['Endpoint', 'RegionName'])
+   print(tabulate(df, headers='keys', tablefmt='psql'))
+   ```
+   - **`import boto3`**: Imports the boto3 library.
+   - **`import pandas as pd`**: Imports the pandas library and aliases it as pd.
+   - **`from tabulate import tabulate`**: Imports the tabulate function from the tabulate module.
+   - **`boto3.client('ec2')`**: Creates an EC2 client to interact with the EC2 service.
+   - **`response = ec2.describe_regions()`**: Calls the describe_regions method to get a list of regions.
+   - **`regions = response['Regions']`**: Extracts the 'Regions' data from the response.
+   - **`pd.DataFrame(regions, columns=['Endpoint', 'RegionName'])`**: Converts the data into a pandas DataFrame.
+   - **`print(tabulate(df, headers='keys', tablefmt='psql'))`**: Prints the DataFrame in a table format using tabulate.
+3. **Navigated to the folder using the terminal:**
+   - Ran "cd /home/kali/Desktop/cloud-lab/" to navigate to the directory where the script is saved.
+     - **`cd`**: Change directory command.
+     - **`/home/kali/Desktop/cloud-lab/`**: Path to the cloud-lab folder.
+4. **Made the script executable:**
+   - Ran "chmod +x lab1.py" to change the file mode, making it executable.
+     - **`chmod +x`**: Changes the file mode to make it executable.
+     - **`lab1.py`**: The file to be made executable.
+5. **Executed the Python script:**
+   - Ran "python3 lab1.py" to execute the script and display the EC2 regions in a formatted table.
+     - **`python3`**: Specifies the Python 3 interpreter.
+     - **`lab1.py`**: The Python script to be executed.
+       
+    ![EC2 Regions](https://github.com/user-attachments/assets/d14a0ce4-bb70-4c8e-bba7-68a0ca759304)
 
-```
-python3
->>> import boto3
->>> ec2 = boto3.client('ec2')
->>> response = ec2.describe_regions()
->>> print(response)
-```
-
-This will create an un-tabulated response.
-
-### [3] Write a Python script
-
-Tabulate the un-tabulated response above to have 2 columns with Endpoint and RegionName.
-
-Lab Assessment:
-
-A structured presentation (15%). A clear step-by-step with detailed descriptions (85%). 
-
+<div style="page-break-after: always;"></div>
