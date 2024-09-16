@@ -757,7 +757,7 @@ aws dynamodb delete-table --table-name CloudFiles --region ap-northeast-3
 ```
 This command scans the table and retrieves all stored items, allowing me to validate that the metadata was correctly inserted.
 
-![image](https://github.com/user-attachments/assets/cc8ed6c6-b27c-458a-836b-8f147675c205)
+![image](https://github.com/user-attachments/assets/147950f0-1b8f-4a2b-8c4e-364f8d089650)
 
 ### [6] Delete the table
 
