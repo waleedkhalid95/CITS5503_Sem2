@@ -165,7 +165,7 @@ To solidify my environment setup, I created a Python script to display EC2 regio
        
     ![EC2 Regions](https://github.com/user-attachments/assets/d14a0ce4-bb70-4c8e-bba7-68a0ca759304)
 
-<div style="page-break-after: always;"></div>
+<div style="page-break-after: always"></div>
 
 \newpage
 
@@ -483,7 +483,7 @@ To manage Docker containers, I used the following commands
 
 ![image](https://github.com/user-attachments/assets/a9d48537-6705-465b-8cbe-f3f54ea79a98)
 
-<div style="page-break-after: always;"></div>
+<div style="page-break-after: always"></div>
 
 \newpage
 
@@ -775,7 +775,7 @@ This command deletes the specified DynamoDB table, cleaning up resources after t
 Finally, I removed the S3 bucket from the AWS console to complete the cleanup process.
 
 
-<div style="page-break-after: always;"></div>
+<div style="page-break-after: always"></div>
 
 \newpage
 
@@ -1226,7 +1226,7 @@ What is the performance difference between using KMS and using the custom soluti
 ```
 
 
-<div style="page-break-after: always;"></div>
+<div style="page-break-after: always"></div>
 
 \newpage
 
