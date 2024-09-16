@@ -1,3 +1,6 @@
+<div style="page-break-after: always;"></div>
+
+
 # Lab 5: Application Load Balancer with EC2 Instances
 
 ## Summary
