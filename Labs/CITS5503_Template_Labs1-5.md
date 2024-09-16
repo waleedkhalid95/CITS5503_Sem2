@@ -168,6 +168,8 @@ To solidify my environment setup, I created a Python script to display EC2 regio
 
 <div style="page-break-after: always;"></div>
 
+<div style="page-break-after: always;"></div>
+
 # Lab 2: Creating an EC2 Instance with AWS CLI and Boto3
 
 ## Summary
