@@ -1,3 +1,6 @@
+<div style="page-break-after: always;"></div>
+
+
 # Lab 4: IAM Policies, KMS, and AES Encryption
 
 ## Summary
@@ -438,8 +441,10 @@ By examining the local directory, I confirmed that all encrypted and decrypted f
 ![image](https://github.com/user-attachments/assets/8dc4886d-bbb0-40f0-b51a-db9f2b4081f0)
 
 
-## Answer the following question (Marked)
+## Q: What is the performance difference between using KMS and using the custom solution?
 
-```
-What is the performance difference between using KMS and using the custom solution?
-```
+A : AWS KMS is a fully managed service that provides secure key management and encryption but it has higher latency as it involves making API calls over the network and has rate limits. This can affect performance and experience delays. It's great when it comes to security and ease of integration into AWS services. On the other hand, custom solutions like PyCryptodome run locally, which results in faster performance and no rate limits since the process does not rely on external service calls, but require users to handle key management and security themselves, which is not always optimal. 
+KMS is suited for use cases where security, compliance, and ease of integration are priorities, even if it means sacrificing some performance. Meanwhile, custom solutions are better suited for performance and unrestricted usage is a focus where the user has the expertise to manage security and can deal with the additional complexity.
+
+
+<div style="page-break-after: always;"></div>
