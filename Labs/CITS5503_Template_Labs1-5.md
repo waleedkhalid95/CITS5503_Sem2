@@ -755,7 +755,7 @@ print("Process complete.")
 I verified the contents of the `CloudFiles` table using AWS CLI:
 
 ```bash
-aws dynamodb delete-table --table-name CloudFiles --region ap-northeast-3
+aws dynamodb scan --table-name CloudFiles --region ap-northeast-3
 ```
 This command scans the table and retrieves all stored items, allowing me to validate that the metadata was correctly inserted.
 
