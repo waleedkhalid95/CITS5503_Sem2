@@ -165,10 +165,9 @@ To solidify my environment setup, I created a Python script to display EC2 regio
        
     ![EC2 Regions](https://github.com/user-attachments/assets/d14a0ce4-bb70-4c8e-bba7-68a0ca759304)
 
-
 <div style="page-break-after: always;"></div>
 
-<div style="page-break-after: always;"></div>
+\newpage
 
 # Lab 2: Creating an EC2 Instance with AWS CLI and Boto3
 
@@ -486,6 +485,7 @@ To manage Docker containers, I used the following commands
 
 <div style="page-break-after: always;"></div>
 
+\newpage
 
 # Lab 3: Cloud Storage with S3 and DynamoDB
 
@@ -776,6 +776,8 @@ Finally, I removed the S3 bucket from the AWS console to complete the cleanup pr
 
 
 <div style="page-break-after: always;"></div>
+
+\newpage
 
 # Lab 4: IAM Policies, KMS, and AES Encryption
 
@@ -1225,6 +1227,8 @@ What is the performance difference between using KMS and using the custom soluti
 
 
 <div style="page-break-after: always;"></div>
+
+\newpage
 
 # Lab 5
 
