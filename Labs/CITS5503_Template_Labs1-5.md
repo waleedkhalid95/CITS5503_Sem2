@@ -759,7 +759,7 @@ aws dynamodb scan --table-name CloudFiles --region ap-northeast-3
 ```
 This command scans the table and retrieves all stored items, allowing me to validate that the metadata was correctly inserted.
 
-![image](https://github.com/user-attachments/assets/147950f0-1b8f-4a2b-8c4e-364f8d089650)
+![image](https://github.com/user-attachments/assets/f8eb1b5f-6d45-4e2f-b338-6902580ea569)
 
 ### [6] Delete the table
 
