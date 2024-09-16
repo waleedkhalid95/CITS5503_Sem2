@@ -506,7 +506,7 @@ This setup of `rootdir` and its subdirectory `subdir` created a nested file stru
 
 ### [2] Save to S3 by Updating `cloudstorage.py`
 
-Next, I modified the `cloudstorage.py` script to create an S3 bucket and upload the files from `rootdir` while preserving their directory structure. Here’s the modified script with added comments:
+Next, I modified the `cloudstorage.py` script to create an S3 bucket and upload the files from `rootdir` while preserving their directory structure. Here’s the modified script:
 
 ```python
 import os
@@ -647,6 +647,8 @@ java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar –sharedDb
 ```
 
 This setup provides a local version of DynamoDB for development and testing purposes, simulating the AWS environment without incurring costs.
+
+I then wrote a python script to create a table called `CloudFiles` on the local DynamoDB.
 
 ```python
 import boto3
