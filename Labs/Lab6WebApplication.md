@@ -31,30 +31,115 @@ The aim of this lab is to write a program that will:
 ## Set up an EC2 instance
 
 ### [1] Create an EC2 micro instance with Ubuntu and SSH into it
+ to create ec2 instance, we will utilize the python program we created earlier for this purpose in lab 2. 
+```python3
+import boto3
+import os
+import subprocess
+import time
 
-**NOTE**: Regarding your region name, find it in the table below based on your student number (If you cannot find your region name, it means you enrolled late and you should send an email to `cits5503-pmc@uwa.edu.au` requesting your region name.).
+# Initialize the EC2 client
+ec2 = boto3.client('ec2')
 
-| Student Number | Region | Region Name | ami id |
-| --- | --- | --- | --- |
-| 20666666 – 22980000 | US East (N. Virginia) |	us-east-1 |	ami-0a0e5d9c7acc336f1 |
-| 22984000 – 23370000 | Asia Pacific (Tokyo)	| ap-northeast-1	| ami-0162fe8bfebb6ea16 |
-| 23400000 – 23798000 | Asia Pacific (Seoul)	| ap-northeast-2	| ami-056a29f2eddc40520 |
-| 23799000 – 23863700 | Asia Pacific (Osaka)	| ap-northeast-3	| ami-0a70c5266db4a6202 |
-| 23864000 – 23902200 | Asia Pacific (Mumbai)	| ap-south-1	| ami-0c2af51e265bd5e0e |
-| 23904000 – 23946000 | Asia Pacific (Singapore)	| ap-southeast-1	| ami-0497a974f8d5dcef8 |
-| 23946100 – 24024000 | Asia Pacific (Sydney)	| ap-southeast-2	| ami-0375ab65ee943a2a6 |
-| 24025000 – 24071000 | Canada (Central)	| ca-central-1	| ami-048ddca51ab3229ab |
-| 24071100 – 24141000 | Europe (Frankfurt)	| eu-central-1	| ami-07652eda1fbad7432 |
-| 24143000 – 24700000 | Europe (Stockholm)	| eu-north-1	| ami-07a0715df72e58928 |
+# Step 1: Create a security group
+security_group = ec2.create_security_group(
+    Description='security group for development environment',
+    GroupName='23803313-sg',
+)
+print(f"Security Group Created: {security_group['GroupId']}")
+
+# Step 2: Authorize inbound traffic for SSH
+ec2.authorize_security_group_ingress(
+    GroupName='23803313-sg',
+    IpPermissions=[
+        {
+            'IpProtocol': 'tcp',
+            'FromPort': 22,
+            'ToPort': 22,
+            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+        }
+    ]
+)
+print(f"Inbound SSH traffic authorized for {security_group['GroupId']}")
+
+# Step 3: Create a key pair
+key_pair_name = '23803313-key'
+key_pair = ec2.create_key_pair(KeyName=key_pair_name)
+key_file_path = f'{key_pair_name}.pem'
+with open(key_file_path, 'w') as file:
+    file.write(key_pair['KeyMaterial'])
+
+# Change the file permission to chmod 400
+os.chmod(key_file_path, 0o400)
+print(f'Key pair created, saved to {key_file_path}, and permissions set to 400')
+
+# Step 4: Create the instance
+instance = ec2.run_instances(
+    ImageId="ami-0a70c5266db4a6202",
+    SecurityGroupIds=[security_group['GroupId']],  # Use a list here
+    InstanceType='t2.micro',
+    KeyName=key_pair_name,
+    MinCount=1,
+    MaxCount=1
+)
+
+instance_id = instance['Instances'][0]['InstanceId']
+print(f'EC2 Instance Created: {instance_id}')
+
+# Step 5: Add a tag to your instance
+ec2.create_tags(
+    Resources=[instance_id],
+    Tags=[{'Key': 'Name', 'Value': '23803313-vm2'}]
+)
+print(f'Tag added to instance {instance_id}')
+
+# Step 6: Get the public IP address
+response = ec2.describe_instances(InstanceIds=[instance_id])
+public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
+print(f'Public IP Address of the instance: {public_ip}')
+
+print('Waiting for the instance to initialize...')
+time.sleep(240)
+
+# Step 7: Connect to the instance via SSH
+ssh_command = f"ssh -i {key_file_path} ubuntu@{public_ip}"
+print(f'Connecting to the instance via SSH: {ssh_command}')
+try:
+    subprocess.run(ssh_command, shell=True, check=True)
+except subprocess.CalledProcessError as e:
+    print(f"Failed to connect to the instance: {e}")
+```
+this program 
+Creates a Security Group
+Authorizes Inbound SSH Traffic
+Creates a Key Pair and Set Permissions
+Launches the EC2 Instance and tags the instance
+ Retrieves the Public IP Address 
+and finally Connects to the Instance via SSH
+
+![image](https://github.com/user-attachments/assets/e5af6d87-5581-4f0f-ac3b-cf5929d6b91e)
+
+
+We can confirm that the instance was created in the console
+
+![image](https://github.com/user-attachments/assets/5fc535cf-6a1f-4a6b-b42c-9dd9b806bddd)
+
 
 ### [2] Install the Python 3 virtual environment package
-
-```
+then we install python 3 virtual invironment on our newly ceated instance
+```bash
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install python3-venv
 ```
-It is easier now if you change the bash to operate as sudo
+
+![image](https://github.com/user-attachments/assets/0fb98d38-9b62-433b-b3d5-cb92af715886)
+
+we ran into some issues related to daemons using outdated libraries and had to resart some services.
+
+![image](https://github.com/user-attachments/assets/806c061f-7be5-4399-b109-5a652dd94678)
+
+now we change the bash to operate as sudo
 
 ```
 sudo bash
@@ -62,18 +147,25 @@ sudo bash
 
 ### [3] Access a directory  
 
-Create a directory with a path `/opt/wwc/mysites` and `cd` into the directory.
-
-### [4] Set up a virtual environment
-
+next we Create a directory with a path `/opt/wwc/mysites` and `cd` into the directory.
+```bash
+mkdir -p /opt/wwc/mysites
+cd /opt/wwc/mysites
 ```
+
+### [4] Create and activate virtual environment
+
+```bash
 python3 -m venv myvenv
-```
-
-### [5] Activate the virtual environment
-
-```
 source myvenv/bin/activate
+```
+
+![image](https://github.com/user-attachments/assets/2edd7cf5-85a8-462d-b31d-61044f557631)
+
+
+### [5] Install Django,  Create Django project and django app
+
+```
 
 pip install django
 
@@ -84,8 +176,28 @@ cd lab
 python3 manage.py startapp polls
 ```
 
-**NOTE**: Stop and look at the files that have been created – the project files are to do with the running of the application. We will deal with the files as we go through.
+now we check the contents 
+```bash
+cd lab
+ls -l
+```
+(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab# python3 manage.py startapp polls
+(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab# ls -l
+total 12
+drwxr-xr-x 3 root root 4096 Oct  8 11:34 lab
+-rwxr-xr-x 1 root root  659 Oct  8 11:34 manage.py
+drwxr-xr-x 3 root root 4096 Oct  8 11:34 polls
+(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab# cd lab
+(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab/lab# ls -l
+total 20
+-rw-r--r-- 1 root root    0 Oct  8 11:34 __init__.py
+drwxr-xr-x 2 root root 4096 Oct  8 11:34 __pycache__
+-rw-r--r-- 1 root root  383 Oct  8 11:34 asgi.py
+-rw-r--r-- 1 root root 3212 Oct  8 11:34 settings.py
+-rw-r--r-- 1 root root  759 Oct  8 11:34 urls.py
+-rw-r--r-- 1 root root  383 Oct  8 11:34 wsgi.py
 
+![image](https://github.com/user-attachments/assets/0f2ece15-fd1f-48b8-9bbc-50d109a00eb3)
 
 ### [6] Install nginx
 
@@ -111,6 +223,8 @@ server {
 }
 ```
 
+![image](https://github.com/user-attachments/assets/1e3b8111-51eb-4642-b02d-a276a9f1e2e4)
+
 ### [8] Restart nginx
 
 ```
@@ -126,7 +240,18 @@ In your app directory: `/opt/wwc/mysites/lab`, run:
 python3 manage.py runserver 8000
 ```
 
-Open a browser and enter the IP address of your EC2 instance. Take a screenshot of what you see and stop your server with CONTROL-C
+![image](https://github.com/user-attachments/assets/316edb75-b2e9-4b45-87d7-a6613ef7bd48)
+
+
+we apply migrations
+```python
+python3 manage.py migrate
+```
+![image](https://github.com/user-attachments/assets/54040dbb-9c6b-48a7-b6dd-d17c69e2f628)
+
+then i Open a browser and enter the IP address of your EC2 instance. Take a screenshot of what you see and stop your server with CONTROL-C
+
+![image](https://github.com/user-attachments/assets/48b2e028-fa66-4302-8b9d-b76e326125ca)
 
 
 ## Set up Django inside the created EC2 instance
