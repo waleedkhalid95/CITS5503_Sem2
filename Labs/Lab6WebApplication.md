@@ -31,7 +31,7 @@ The aim of this lab is to write a program that will:
 ## Set up an EC2 instance
 
 ### [1] Create an EC2 micro instance with Ubuntu and SSH into it
- to create ec2 instance, we will utilize the python program we created earlier for this purpose in lab 2. 
+ to create ec2 instance, we will utilize a modified version of the python program we created earlier for this purpose in lab 2. the modification will Allow HTTP traffic.
 ```python3
 import boto3
 import os
@@ -48,19 +48,27 @@ security_group = ec2.create_security_group(
 )
 print(f"Security Group Created: {security_group['GroupId']}")
 
-# Step 2: Authorize inbound traffic for SSH
+# Step 2: Authorize inbound traffic for SSH and HTTP
 ec2.authorize_security_group_ingress(
     GroupName='23803313-sg',
     IpPermissions=[
+        # Allow SSH traffic (port 22)
         {
             'IpProtocol': 'tcp',
             'FromPort': 22,
             'ToPort': 22,
             'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+        },
+        # Allow HTTP traffic (port 80)
+        {
+            'IpProtocol': 'tcp',
+            'FromPort': 80,
+            'ToPort': 80,
+            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
         }
     ]
 )
-print(f"Inbound SSH traffic authorized for {security_group['GroupId']}")
+print(f"Inbound SSH and HTTP traffic authorized for {security_group['GroupId']}")
 
 # Step 3: Create a key pair
 key_pair_name = '23803313-key'
@@ -99,7 +107,7 @@ public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
 print(f'Public IP Address of the instance: {public_ip}')
 
 print('Waiting for the instance to initialize...')
-time.sleep(240)
+time.sleep(240)  # Wait for instance initialization
 
 # Step 7: Connect to the instance via SSH
 ssh_command = f"ssh -i {key_file_path} ubuntu@{public_ip}"
@@ -108,10 +116,11 @@ try:
     subprocess.run(ssh_command, shell=True, check=True)
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
+
 ```
 this program 
 Creates a Security Group
-Authorizes Inbound SSH Traffic
+Authorizes Inbound SSH and HTTP Traffic
 Creates a Key Pair and Set Permissions
 Launches the EC2 Instance and tags the instance
  Retrieves the Public IP Address 
