@@ -205,85 +205,96 @@ Open the browser and enter the public IP address of the EC2 instance to verify t
 
 ![image](https://github.com/user-attachments/assets/cbe7da26-7834-4047-b381-21c2c94054fa)
 
+## Setting Up Django Application
 
-## Set up Django inside the created EC2 instance
+### [1] Editing Django Files
+After installing Django and creating the `polls` app, I proceeded to modify the necessary Django files to handle HTTP requests and display simple content. This involves creating views, URL patterns, and routing.
 
-### [1] Edit the following files (create them if not exist)
-
-edit polls/views.py
-
+#### Editing `polls/views.py`
+First, I needed to create a view that returns a basic HTTP response.
 ```bash
 nano polls/views.py
 ```
-
-```
+In `polls/views.py`, I added the following code:
+```python3
 from django.http import HttpResponse
 
 def index(request):
     return HttpResponse("Hello, world.")
 ```
+**Explanation**:
+- I imported the `HttpResponse` class from `django.http` to send back an HTTP response when the view is accessed.
+- The `index()` function takes an HTTP request and returns an HTTP response with the text "Hello, world." This will be the basic content displayed when we access the `/polls/` URL.
+  
 ![image](https://github.com/user-attachments/assets/db289496-0d65-406b-9ebc-a8dba65d2202)
 
-edit polls/urls.py 
-
+#### Editing `polls/urls.py` 
+Next, I needed to map the view to a URL pattern in the `polls` app.
 ```bash
 nano polls/urls.py
 ```
-
+In `polls/urls.py`, I added the following code:
 ```
 from django.urls import path
-from . import views
+from . import views  # Import the views from the same directory
 
+# Define the URL patterns for the polls app
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.index, name='index'),  # Map the root URL to the index view
 ]
 ```
+**Explanation**
+- The `urlpatterns` list maps URLs to views. Here, I used the `path` function to route the root URL (`''`) of the `polls app` to the `index()` view we just created in `polls/views.py`.
+- The `name='index'` is a URL name that can be referenced in templates or other Django components.
+
 ![image](https://github.com/user-attachments/assets/24579883-73a3-44e5-a46e-bb1207f0f5b4)
 
 
-edit lab/urls.py
+#### Editing `lab/urls.py`
+```bash
 nano lab/urls.py
-
+```
+In `lab/urls.py`, I added the following code:
 ```
 from django.urls import include, path
 from django.contrib import admin
 
+# Define the URL patterns for the project
 urlpatterns = [
-    path('polls/', include('polls.urls')),
-    path('admin/', admin.site.urls),
+    path('polls/', include('polls.urls')),  # Include the polls app's URLs
+    path('admin/', admin.site.urls),  # Default admin URL
 ]
 ```
+**Explanation**
+- The `path('polls/', include('polls.urls'))` line includes the URL patterns from the `polls` app whenever the `/polls/` URL is accessed. This means that any URL beginning with `/polls/` will be handled by the `polls` app.
+- The `admin/` path is the default Django admin interface URL.
+- 
 ![image](https://github.com/user-attachments/assets/9cc66874-f293-42cc-9c81-a2f34b4368fd)
 
-
-### [2] Run the web server again
-
+### [2] Running the Django Web Server
+Now that the `polls` app has been set up and the URLs are correctly routed, I ran the Django development server to test the application.
 ```
 python3 manage.py runserver 8000
 ```
+This command runs the Django development server on port 8000, binding the server to localhost. However, since we configured nginx as a reverse proxy, nginx will forward traffic from port 80 (HTTP) to port 8000 (Django).
+### [3] Accessing the EC2 Instance
+With the Django development server running, I accessed the application using the public IP of the EC2 instance and navigated to the `/polls/` endpoint. This verifies that the application is properly set up and working.
 
-### [3] Access the EC2 instance
+I opened a browser and entered the public IP, http://13.208.165.62/polls/, of the EC2 instance with the `/polls/` URL to verify changes
 
-Access the URL: http://13.208.165.62/polls/, to verify changes
+This resulted in the expected "Hello, world." message from the `index()` view.
 
 ![image](https://github.com/user-attachments/assets/4bedbd35-4f3e-4a3d-a052-4f0bacdbb46e)
 
 
-## Set up an ALB
+## Setting Up Application Load Balancer
 
-### [1] Create an application load balancer
+### [1] Creating an Application Load Balancer
 
-23803313-alb
+To improve scalability and availability, I created an Application Load Balancer (ALB) to distribute incoming HTTP traffic between multiple EC2 instances.
 
-Specify the region subnet where your EC2 instance resides.
+I used the following Python script to create the ALB, set up a target group, register the EC2 instance as a target, and create an HTTP listener.
 
-Create a listener with a default rule Protocol: HTTP and Port 80 forwarding.
-
-Choose the security group, allowing HTTP traffic. 
-
-Add your instance as a registered target.
-
-for this we use a modifed version of the python program we creted in lab 5
 ```python3
 import boto3
 import time
@@ -292,27 +303,21 @@ import time
 ec2 = boto3.client('ec2', region_name='ap-northeast-3')
 elbv2 = boto3.client('elbv2', region_name='ap-northeast-3')
 
-# Define parameters for the key pair and security group
-key_name = '23803313-key'
-security_group_name = '23803313-sg'
-
-# Step 1: Get Instance Details
-# Use describe_instances to find the instances created with the specified key name and security group
-
+# Step 1: Get Instance Details and Subnet IDs
+# Use filters to find instances created with a specific key name and security group
 try:
-    # Use filters to find instances created with a specific key name and security group
     response = ec2.describe_instances(
         Filters=[
-            {'Name': 'key-name', 'Values': [key_name]},
-            {'Name': 'instance.group-name', 'Values': [security_group_name]},
+            {'Name': 'key-name', 'Values': ['23803313-key']},
+            {'Name': 'instance.group-name', 'Values': ['23803313-sg']},
             {'Name': 'instance-state-name', 'Values': ['running']}  # Filter for running instances
         ]
     )
     
+    # Extract instance IDs and subnet IDs
     instance_ids = []
     subnet_ids = []
     
-    # Loop through the response to extract the instance IDs and subnet IDs
     for reservation in response['Reservations']:
         for instance in reservation['Instances']:
             instance_id = instance['InstanceId']
@@ -321,7 +326,7 @@ try:
             subnet_ids.append(subnet_id)
             print(f"Instance ID: {instance_id}, Subnet ID: {subnet_id}")
 
-    if len(instance_ids) == 0:
+    if not instance_ids:
         print("No running instances found.")
     else:
         print(f"Found {len(instance_ids)} running instance(s).")
@@ -331,29 +336,25 @@ except Exception as e:
 
 # Step 2: Retrieve the Security Group ID
 try:
-    # Attempt to describe the security group by name to see if it already exists
-    response_sg = ec2.describe_security_groups(GroupNames=[security_group_name])
+    response_sg = ec2.describe_security_groups(GroupNames=['23803313-sg'])
     security_group_id = response_sg['SecurityGroups'][0]['GroupId']
     print(f"Existing Security Group found: {security_group_id}\n")
 except ec2.exceptions.ClientError as e:
-    # Handle unexpected errors
     print(f"Unexpected error: {e}\n")
 
 # Step 3: Create an Application Load Balancer (ALB)
 try:
-    # Use the security group ID instead of the group name
     load_balancer = elbv2.create_load_balancer(
         Name='23803313-alb',
-        Subnets=subnet_ids,  # Use the subnets of the created instances to attach to the load balancer
-        SecurityGroups=[security_group_id],  # Attach the security group ID
-        Scheme='internet-facing',   # Make the load balancer accessible from the internet
+        Subnets=subnet_ids,  # Attach to the subnets of the running EC2 instances
+        SecurityGroups=[security_group_id],  # Use the same security group
+        Scheme='internet-facing',  # Publicly accessible load balancer
         Tags=[
             {'Key': 'Name', 'Value': '23803313-alb'}
         ],
-        Type='application',         # Specify that this is an application load balancer
+        Type='application',  # Specify this as an application load balancer
         IpAddressType='ipv4'
     )
-    # Extract the ARN (Amazon Resource Name) for the load balancer
     lb_arn = load_balancer['LoadBalancers'][0]['LoadBalancerArn']
     print(f"Load Balancer created: {lb_arn}")
 
@@ -362,7 +363,6 @@ except Exception as e:
 
 # Step 4: Create a Target Group for the Load Balancer
 try:
-    # Correctly fetch the VPC ID from the instance description
     instance_details = ec2.describe_instances(InstanceIds=[instance_ids[0]])
     vpc_id = instance_details['Reservations'][0]['Instances'][0]['VpcId']
     
@@ -371,23 +371,21 @@ try:
         Name='23803313-tg',
         Protocol='HTTP',
         Port=80,
-        VpcId=vpc_id,
+        VpcId=vpc_id,  # Use the VPC of the instances
         HealthCheckProtocol='HTTP',
         HealthCheckPort='80',
-        HealthCheckPath='/polls/',
+        HealthCheckPath='/polls/',  # Specify the path for health checks
         TargetType='instance'
     )
-    
     target_group_arn = target_group['TargetGroups'][0]['TargetGroupArn']
     print(f"Target Group created: {target_group_arn}")
 
 except Exception as e:
     print(f"An error occurred while creating the target group: {e}")
 
-# Step 5: Register the EC2 Instances as Targets in the Target Group
+# Step 5: Register EC2 Instances in the Target Group
 if 'target_group_arn' in locals():
     try:
-        # Register the EC2 instances with the target group
         elbv2.register_targets(
             TargetGroupArn=target_group_arn,
             Targets=[{'Id': instance_id} for instance_id in instance_ids]
@@ -396,25 +394,21 @@ if 'target_group_arn' in locals():
 
     except Exception as e:
         print(f"An error occurred while registering targets: {e}")
-else:
-    print("Target group creation failed. Skipping instance registration.")
 
 # Step 6: Create a Listener for the Load Balancer
 if 'lb_arn' in locals() and 'target_group_arn' in locals():
     try:
-        # Create a listener that will forward incoming HTTP requests on port 80 to the target group
         listener = elbv2.create_listener(
-            LoadBalancerArn=lb_arn,  # ARN of the load balancer to attach the listener to
+            LoadBalancerArn=lb_arn,  # ARN of the load balancer
             Protocol='HTTP',
             Port=80,
             DefaultActions=[
                 {
                     'Type': 'forward',
-                    'TargetGroupArn': target_group_arn
+                    'TargetGroupArn': target_group_arn  # Forward traffic to the target group
                 }
             ]
         )
-        # Extract the ARN of the listener
         listener_arn = listener['Listeners'][0]['ListenerArn']
         print(f"Listener created: {listener_arn}")
 
@@ -422,26 +416,30 @@ if 'lb_arn' in locals() and 'target_group_arn' in locals():
         print(f"An error occurred while creating the listener: {e}")
 else:
     print("Load balancer or target group creation failed. Skipping listener creation.")
-)
+
 ```
+**Explanation**
+- **Instance Details:** The script retrieves the details of running EC2 instances based on filters (key pair, security group, and instance state). This helps gather information such as instance IDs and subnet IDs.
+- **Security Group:** The existing security group is retrieved to attach it to the load balancer for consistent access control.
+- **Create ALB:** The Application Load Balancer is created with an internet-facing scheme, allowing public access. The subnets of the EC2 instances are associated with the ALB to distribute traffic across them.
+- **Target Group:** A target group is created to hold the EC2 instances. It uses the `/polls/` path for health checks, ensuring the app is responsive before directing traffic.
+- **Register Instances:** The EC2 instances are registered as targets in the target group. This ensures that incoming traffic is distributed among these instances.
+- **Listener:** A listener is created to forward HTTP traffic from port 80 to the target group.
 
 ![image](https://github.com/user-attachments/assets/d8395956-f6d7-4cb3-943f-3b59dc3a921e)
 
+### [2] Health Check Configuration
 
-### [2] Health check
-
-For the target group, specify /polls/ for a path for the health check.
-
-Confirm the health check fetch the /polls/ page every 30 seconds.
+For the target group, I configured the ALB to check the health of the EC2 instances by making a request to the `/polls/` endpoint every 30 seconds. If the response is successful, the instance is marked as healthy.
 
 ![image](https://github.com/user-attachments/assets/97a19c78-6b7e-407a-b16f-a31512bd7184)
 
-
 ![image](https://github.com/user-attachments/assets/03dbdb4c-427b-4724-badc-a95b41a5ee30)
 
-### [3] Access
+### [3] Accessing the Application via ALB
+Finally, I accessed the Django app using the DNS name of the ALB. This confirms that the ALB is distributing traffic to the instances correctly and that the app is responsive.
 
-Access the URL: http://23803313-alb-1046759913.ap-northeast-3.elb.amazonaws.com/polls/, and output what you've got.
+Access the URL: http://23803313-alb-1046759913.ap-northeast-3.elb.amazonaws.com/polls/
 
 ![image](https://github.com/user-attachments/assets/70c46249-efbb-4792-b9d8-8364b85e1c39)
 
