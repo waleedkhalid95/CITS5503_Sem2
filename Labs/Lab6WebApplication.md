@@ -1,67 +1,67 @@
-# Practical Worksheet 6
+# Lab 6: Deploying a Django Web App with Application Load Balancer
 
 ## Summary
-In this lab, I set up a Django web application on an AWS EC2 instance and configured an Application Load Balancer (ALB) for scalability and load distribution. The process included creating the EC2 instance and its associated security groups using a Python script, setting up nginx as a reverse proxy for the Django app, and deploying the app. I then created an ALB with HTTP listeners, registered my EC2 instance as a target, and configured health checks. Finally, I accessed the app via the ALB’s DNS name, ensuring that the setup works seamlessly for web traffic distribution.
+In this lab, I set up a Django web application on an EC2 instance and configured an Application Load Balancer (ALB) to distribute HTTP traffic between instances for scalability and high availability. The main tasks involved creating the EC2 instance and security groups, installing and configuring a Django app, setting up nginx as a reverse proxy, and configuring the ALB with health checks to ensure the application is running smoothly. By the end of the lab, I accessed the Django application through the ALB's DNS name, confirming successful load balancing and web traffic distribution.
 
 ## Set up an EC2 instance
 
-### [1] Create an EC2 micro instance with Ubuntu and SSH into it
- to create ec2 instance, we will utilize a modified version of the python program we created earlier for this purpose in lab 2. the modification will Allow HTTP traffic.
+### [1] Create an EC2 Instance with Ubuntu and SSH into It
+I modified the Python script used in Lab 2 to create an EC2 instance with both SSH and HTTP traffic allowed. The steps involve creating a security group, launching an instance, and connecting via SSH.
 ```python3
 import boto3
 import os
 import subprocess
 import time
 
-# Initialize the EC2 client
+# Initialize the EC2 client to interact with AWS EC2 services
 ec2 = boto3.client('ec2')
 
-# Step 1: Create a security group
+# Step 1: Create a security group for the EC2 instance
 security_group = ec2.create_security_group(
     Description='security group for development environment',
     GroupName='23803313-sg',
 )
 print(f"Security Group Created: {security_group['GroupId']}")
 
-# Step 2: Authorize inbound traffic for SSH and HTTP
+# Step 2: Authorize inbound traffic for SSH (port 22) and HTTP (port 80)
 ec2.authorize_security_group_ingress(
     GroupName='23803313-sg',
     IpPermissions=[
-        # Allow SSH traffic (port 22)
+        # Allow SSH traffic on port 22
         {
             'IpProtocol': 'tcp',
             'FromPort': 22,
             'ToPort': 22,
-            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]  # Open SSH to all IPs for development
         },
-        # Allow HTTP traffic (port 80)
+        # Allow HTTP traffic on port 80
         {
             'IpProtocol': 'tcp',
             'FromPort': 80,
             'ToPort': 80,
-            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+            'IpRanges': [{'CidrIp': '0.0.0.0/0'}]  # Open HTTP for web access
         }
     ]
 )
 print(f"Inbound SSH and HTTP traffic authorized for {security_group['GroupId']}")
 
-# Step 3: Create a key pair
+# Step 3: Create a key pair for SSH access
 key_pair_name = '23803313-key'
 key_pair = ec2.create_key_pair(KeyName=key_pair_name)
 key_file_path = f'{key_pair_name}.pem'
+
+# Save the private key to a file and set secure permissions (chmod 400)
 with open(key_file_path, 'w') as file:
     file.write(key_pair['KeyMaterial'])
-
-# Change the file permission to chmod 400
 os.chmod(key_file_path, 0o400)
 print(f'Key pair created, saved to {key_file_path}, and permissions set to 400')
 
-# Step 4: Create the instance
+# Step 4: Launch the EC2 instance with Ubuntu AMI and created security group
 instance = ec2.run_instances(
-    ImageId="ami-0a70c5266db4a6202",
-    SecurityGroupIds=[security_group['GroupId']],  # Use a list here
-    InstanceType='t2.micro',
-    KeyName=key_pair_name,
+    ImageId="ami-0a70c5266db4a6202",  # Ubuntu AMI for the ap-northeast-3 region
+    SecurityGroupIds=[security_group['GroupId']],
+    InstanceType='t2.micro',  # Free-tier instance type
+    KeyName=key_pair_name,  # Use the created key pair for SSH
     MinCount=1,
     MaxCount=1
 )
@@ -69,48 +69,46 @@ instance = ec2.run_instances(
 instance_id = instance['Instances'][0]['InstanceId']
 print(f'EC2 Instance Created: {instance_id}')
 
-# Step 5: Add a tag to your instance
+# Step 5: Tag the instance with a recognizable name
 ec2.create_tags(
     Resources=[instance_id],
-    Tags=[{'Key': 'Name', 'Value': '23803313-vm2'}]
+    Tags=[{'Key': 'Name', 'Value': '23803313-vm2'}]  # Name tag for easy identification
 )
 print(f'Tag added to instance {instance_id}')
 
-# Step 6: Get the public IP address
+# Step 6: Retrieve the instance's public IP address for SSH access
 response = ec2.describe_instances(InstanceIds=[instance_id])
 public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
 print(f'Public IP Address of the instance: {public_ip}')
 
+# Wait for the instance to initialize and be ready
 print('Waiting for the instance to initialize...')
-time.sleep(240)  # Wait for instance initialization
+time.sleep(240)  # Wait for 4 minutes to allow instance initialization
 
-# Step 7: Connect to the instance via SSH
+# Step 7: Connect to the instance via SSH using the generated key and public IP
 ssh_command = f"ssh -i {key_file_path} ubuntu@{public_ip}"
 print(f'Connecting to the instance via SSH: {ssh_command}')
 try:
-    subprocess.run(ssh_command, shell=True, check=True)
+    subprocess.run(ssh_command, shell=True, check=True)  # Execute the SSH command
 except subprocess.CalledProcessError as e:
     print(f"Failed to connect to the instance: {e}")
-
 ```
-this program 
-Creates a Security Group
-Authorizes Inbound SSH and HTTP Traffic
-Creates a Key Pair and Set Permissions
-Launches the EC2 Instance and tags the instance
- Retrieves the Public IP Address 
-and finally Connects to the Instance via SSH
+**Explanation**:
+- **Security Group Creation**: I created a security group to allow both SSH and HTTP traffic. This is crucial for remotely managing the instance (SSH) and serving the Django application (HTTP).
+- **Key Pair**: The script generates a key pair for secure SSH access, saves the private key locally, and restricts access to it using `chmod 400`
+- **Launch EC2 Instance**: An EC2 instance is created using the Ubuntu AMI. I associated it with the security group and key pair, and tagged it with a name for identification.
+- **Public IP**: I retrieved the public IP of the instance, which is required for SSH access and to later access the Django app.
+- **SSH Connection**: The script attempts to SSH into the instance using the private key and public IP.
 
 ![image](https://github.com/user-attachments/assets/e5af6d87-5581-4f0f-ac3b-cf5929d6b91e)
 
-
-We can confirm that the instance was created in the console
+Once the instance was up and running, I confirmed its creation in the AWS console:
 
 ![image](https://github.com/user-attachments/assets/5fc535cf-6a1f-4a6b-b42c-9dd9b806bddd)
 
 
-### [2] Install the Python 3 virtual environment package
-then we install python 3 virtual invironment on our newly ceated instance
+### [2] Install Python 3 Virtual Environment
+After connecting to the instance, I updated the instance and installed the necessary Python 3 virtual environment package:
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
@@ -119,84 +117,51 @@ sudo apt-get install python3-venv
 
 ![image](https://github.com/user-attachments/assets/0fb98d38-9b62-433b-b3d5-cb92af715886)
 
-we ran into some issues related to daemons using outdated libraries and had to resart some services.
+I encountered some issues during the upgrade due to outdated libraries, which required restarting certain services:
 
 ![image](https://github.com/user-attachments/assets/806c061f-7be5-4399-b109-5a652dd94678)
 
-now we change the bash to operate as sudo
+### [3] Create Project Directory and Set Up Virtual Environment  
 
-```
-sudo bash
-```
-
-### [3] Access a directory  
-
-next we Create a directory with a path `/opt/wwc/mysites` and `cd` into the directory.
+I then created the project directory, `/opt/wwc/mysites`, and set up a Python virtual environment inside it:
 ```bash
-mkdir -p /opt/wwc/mysites
+sudo bash  # Switch to root
+mkdir -p /opt/wwc/mysites  # Create the project directory
 cd /opt/wwc/mysites
-```
-
-### [4] Create and activate virtual environment
-
-```bash
-python3 -m venv myvenv
-source myvenv/bin/activate
+python3 -m venv myvenv  # Create virtual environment
+source myvenv/bin/activate  # Activate the virtual environment
 ```
 
 ![image](https://github.com/user-attachments/assets/2edd7cf5-85a8-462d-b31d-61044f557631)
 
 
-### [5] Install Django,  Create Django project and django app
-
-```
-
+### [4] Install Django, Create Django Project, and Django App
+Inside the virtual environment, I installed Django, started a new Django project called `lab`, and created an app called `polls`:
+```bash
 pip install django
-
 django-admin startproject lab
-
 cd lab
-
 python3 manage.py startapp polls
 ```
-
-now we check the contents 
+I checked the contents to ensure everything was set up properly:
 ```bash
-cd lab
 ls -l
 ```
-(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab# python3 manage.py startapp polls
-(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab# ls -l
-total 12
-drwxr-xr-x 3 root root 4096 Oct  8 11:34 lab
--rwxr-xr-x 1 root root  659 Oct  8 11:34 manage.py
-drwxr-xr-x 3 root root 4096 Oct  8 11:34 polls
-(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab# cd lab
-(myvenv) root@ip-172-31-40-111:/opt/wwc/mysites/lab/lab# ls -l
-total 20
--rw-r--r-- 1 root root    0 Oct  8 11:34 __init__.py
-drwxr-xr-x 2 root root 4096 Oct  8 11:34 __pycache__
--rw-r--r-- 1 root root  383 Oct  8 11:34 asgi.py
--rw-r--r-- 1 root root 3212 Oct  8 11:34 settings.py
--rw-r--r-- 1 root root  759 Oct  8 11:34 urls.py
--rw-r--r-- 1 root root  383 Oct  8 11:34 wsgi.py
-
 ![image](https://github.com/user-attachments/assets/0f2ece15-fd1f-48b8-9bbc-50d109a00eb3)
 
-### [6] Install nginx
+## Setting Up nginx as Reverse Proxy
 
+### [5] Install nginx
+To handle incoming HTTP requests and forward them to the Django app, I installed nginx:
 ```
-apt install nginx
+sudo apt install nginx
 ```
-
-### [7] Configure nginx
-
-edit `/etc/nginx/sites-enabled/default` and replace the contents of the file with
-
+### [6] Configure nginx
+I edited the nginx configuration file to set it up as a reverse proxy that forwards traffic from port 80 to the Django app running on port 8000:
 ```bash
 sudo nano /etc/nginx/sites-enabled/default
 ```
-
+Replace the file content with:
 ```
 server {
   listen 80 default_server;
@@ -213,25 +178,30 @@ server {
 
 ![image](https://github.com/user-attachments/assets/1e3b8111-51eb-4642-b02d-a276a9f1e2e4)
 
-### [8] Restart nginx
+This configuration ensures that any traffic received on port 80 is forwarded to the Django app running locally on port 8000.
 
+### [7] Restart nginx
+After editing the configuration, I restarted the nginx service to apply the changes:
 ```
 service nginx restart
 ```
 
+### [8] Access the EC2 Instance
 
-### [9] Access your EC2 instance
-
-In your app directory: `/opt/wwc/mysites/lab`, run:
-
+After restarting nginx, we need to run the Django development server to serve the web application. To do this, I navigated to the Django project directory and executed the runserver command:
+```bash
+cd /opt/wwc/mysites/lab
 ```
+This is where the Django project is located.
+Then Run the Django development server on port 8000:
+```bash
 python3 manage.py runserver 8000
 ```
+This command starts the Django web server locally, binding it to port 8000. The application will now be accessible through nginx, which proxies requests from port 80 (public HTTP) to port 8000 (Django).
 
 ![image](https://github.com/user-attachments/assets/59e6cb3c-aa4a-4715-9f28-5921fa6628b8)
 
-
-then i Open a browser and enter the IP address of your EC2 instance. 
+Open the browser and enter the public IP address of the EC2 instance to verify the setup. The IP address can be retrieved from the AWS console or via the output from the earlier Python script. Once entered into the browser, nginx forwards the request to Django, and the app is displayed.
 
 ![image](https://github.com/user-attachments/assets/cbe7da26-7834-4047-b381-21c2c94054fa)
 
