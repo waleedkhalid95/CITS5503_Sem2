@@ -253,17 +253,12 @@ In your app directory: `/opt/wwc/mysites/lab`, run:
 python3 manage.py runserver 8000
 ```
 
+![image](https://github.com/user-attachments/assets/59e6cb3c-aa4a-4715-9f28-5921fa6628b8)
+
+
+then i Open a browser and enter the IP address of your EC2 instance. 
+
 ![image](https://github.com/user-attachments/assets/cbe7da26-7834-4047-b381-21c2c94054fa)
-
-we apply migrations
-```python
-python3 manage.py migrate
-```
-![image](https://github.com/user-attachments/assets/54040dbb-9c6b-48a7-b6dd-d17c69e2f628)
-
-then i Open a browser and enter the IP address of your EC2 instance. Take a screenshot of what you see and stop your server with CONTROL-C
-
-![image](https://github.com/user-attachments/assets/48b2e028-fa66-4302-8b9d-b76e326125ca)
 
 
 ## Set up Django inside the created EC2 instance
@@ -272,14 +267,23 @@ then i Open a browser and enter the IP address of your EC2 instance. Take a scre
 
 edit polls/views.py
 
+```bash
+nano polls/views.py
+```
+
 ```
 from django.http import HttpResponse
 
 def index(request):
     return HttpResponse("Hello, world.")
 ```
+![image](https://github.com/user-attachments/assets/db289496-0d65-406b-9ebc-a8dba65d2202)
 
 edit polls/urls.py 
+
+```bash
+nano polls/urls.py
+```
 
 ```
 from django.urls import path
@@ -289,8 +293,11 @@ urlpatterns = [
     path('', views.index, name='index'),
 ]
 ```
+![image](https://github.com/user-attachments/assets/24579883-73a3-44e5-a46e-bb1207f0f5b4)
+
 
 edit lab/urls.py
+nano lab/urls.py
 
 ```
 from django.urls import include, path
@@ -301,6 +308,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 ```
+![image](https://github.com/user-attachments/assets/9cc66874-f293-42cc-9c81-a2f34b4368fd)
+
 
 ### [2] Run the web server again
 
@@ -310,13 +319,16 @@ python3 manage.py runserver 8000
 
 ### [3] Access the EC2 instance
 
-Access the URL: http://\<ip address of your EC2 instance>/polls/, and output what you've got. 
+Access the URL: http://13.208.165.62/polls/, to verify changes
 
-**NOTE**: remember to put the /polls/ on the end and you may need to restart nginx if it does not work.
+![image](https://github.com/user-attachments/assets/4bedbd35-4f3e-4a3d-a052-4f0bacdbb46e)
+
 
 ## Set up an ALB
 
 ### [1] Create an application load balancer
+
+23803313-alb
 
 Specify the region subnet where your EC2 instance resides.
 
@@ -326,15 +338,168 @@ Choose the security group, allowing HTTP traffic.
 
 Add your instance as a registered target.
 
+for this we use a modifed version of the python program we creted in lab 5
+```python3
+import boto3
+import time
+
+# Initialize EC2 and ELBv2 clients in the specified region
+ec2 = boto3.client('ec2', region_name='ap-northeast-3')
+elbv2 = boto3.client('elbv2', region_name='ap-northeast-3')
+
+# Define parameters for the key pair and security group
+key_name = '23803313-key'
+security_group_name = '23803313-sg'
+
+# Step 1: Get Instance Details
+# Use describe_instances to find the instances created with the specified key name and security group
+
+try:
+    # Use filters to find instances created with a specific key name and security group
+    response = ec2.describe_instances(
+        Filters=[
+            {'Name': 'key-name', 'Values': [key_name]},
+            {'Name': 'instance.group-name', 'Values': [security_group_name]},
+            {'Name': 'instance-state-name', 'Values': ['running']}  # Filter for running instances
+        ]
+    )
+    
+    instance_ids = []
+    subnet_ids = []
+    
+    # Loop through the response to extract the instance IDs and subnet IDs
+    for reservation in response['Reservations']:
+        for instance in reservation['Instances']:
+            instance_id = instance['InstanceId']
+            subnet_id = instance['SubnetId']
+            instance_ids.append(instance_id)
+            subnet_ids.append(subnet_id)
+            print(f"Instance ID: {instance_id}, Subnet ID: {subnet_id}")
+
+    if len(instance_ids) == 0:
+        print("No running instances found.")
+    else:
+        print(f"Found {len(instance_ids)} running instance(s).")
+
+except Exception as e:
+    print(f"An error occurred while retrieving instance details: {e}")
+
+# Step 2: Retrieve the Security Group ID
+try:
+    # Attempt to describe the security group by name to see if it already exists
+    response_sg = ec2.describe_security_groups(GroupNames=[security_group_name])
+    security_group_id = response_sg['SecurityGroups'][0]['GroupId']
+    print(f"Existing Security Group found: {security_group_id}\n")
+except ec2.exceptions.ClientError as e:
+    # Handle unexpected errors
+    print(f"Unexpected error: {e}\n")
+
+# Step 3: Create an Application Load Balancer (ALB)
+try:
+    # Use the security group ID instead of the group name
+    load_balancer = elbv2.create_load_balancer(
+        Name='23803313-alb',
+        Subnets=subnet_ids,  # Use the subnets of the created instances to attach to the load balancer
+        SecurityGroups=[security_group_id],  # Attach the security group ID
+        Scheme='internet-facing',   # Make the load balancer accessible from the internet
+        Tags=[
+            {'Key': 'Name', 'Value': '23803313-alb'}
+        ],
+        Type='application',         # Specify that this is an application load balancer
+        IpAddressType='ipv4'
+    )
+    # Extract the ARN (Amazon Resource Name) for the load balancer
+    lb_arn = load_balancer['LoadBalancers'][0]['LoadBalancerArn']
+    print(f"Load Balancer created: {lb_arn}")
+
+except Exception as e:
+    print(f"An error occurred while creating the load balancer: {e}")
+
+# Step 4: Create a Target Group for the Load Balancer
+try:
+    # Correctly fetch the VPC ID from the instance description
+    instance_details = ec2.describe_instances(InstanceIds=[instance_ids[0]])
+    vpc_id = instance_details['Reservations'][0]['Instances'][0]['VpcId']
+    
+    # Create a target group for the load balancer
+    target_group = elbv2.create_target_group(
+        Name='23803313-tg',
+        Protocol='HTTP',
+        Port=80,
+        VpcId=vpc_id,
+        HealthCheckProtocol='HTTP',
+        HealthCheckPort='80',
+        HealthCheckPath='/polls/',
+        TargetType='instance'
+    )
+    
+    target_group_arn = target_group['TargetGroups'][0]['TargetGroupArn']
+    print(f"Target Group created: {target_group_arn}")
+
+except Exception as e:
+    print(f"An error occurred while creating the target group: {e}")
+
+# Step 5: Register the EC2 Instances as Targets in the Target Group
+if 'target_group_arn' in locals():
+    try:
+        # Register the EC2 instances with the target group
+        elbv2.register_targets(
+            TargetGroupArn=target_group_arn,
+            Targets=[{'Id': instance_id} for instance_id in instance_ids]
+        )
+        print(f"Instances registered to target group: {target_group_arn}")
+
+    except Exception as e:
+        print(f"An error occurred while registering targets: {e}")
+else:
+    print("Target group creation failed. Skipping instance registration.")
+
+# Step 6: Create a Listener for the Load Balancer
+if 'lb_arn' in locals() and 'target_group_arn' in locals():
+    try:
+        # Create a listener that will forward incoming HTTP requests on port 80 to the target group
+        listener = elbv2.create_listener(
+            LoadBalancerArn=lb_arn,  # ARN of the load balancer to attach the listener to
+            Protocol='HTTP',
+            Port=80,
+            DefaultActions=[
+                {
+                    'Type': 'forward',
+                    'TargetGroupArn': target_group_arn
+                }
+            ]
+        )
+        # Extract the ARN of the listener
+        listener_arn = listener['Listeners'][0]['ListenerArn']
+        print(f"Listener created: {listener_arn}")
+
+    except Exception as e:
+        print(f"An error occurred while creating the listener: {e}")
+else:
+    print("Load balancer or target group creation failed. Skipping listener creation.")
+)
+```
+
+![image](https://github.com/user-attachments/assets/d8395956-f6d7-4cb3-943f-3b59dc3a921e)
+
+
 ### [2] Health check
 
 For the target group, specify /polls/ for a path for the health check.
 
 Confirm the health check fetch the /polls/ page every 30 seconds.
 
+![image](https://github.com/user-attachments/assets/97a19c78-6b7e-407a-b16f-a31512bd7184)
+
+
+![image](https://github.com/user-attachments/assets/03dbdb4c-427b-4724-badc-a95b41a5ee30)
+
 ### [3] Access
 
-Access the URL: http://\<load balancer dns name>/polls/, and output what you've got.
+Access the URL: http://23803313-alb-1046759913.ap-northeast-3.elb.amazonaws.com/polls/, and output what you've got.
+
+![image](https://github.com/user-attachments/assets/70c46249-efbb-4792-b9d8-8364b85e1c39)
+
 
 **NOTE**: When you are done, delete the instance and ALB you created.
 
