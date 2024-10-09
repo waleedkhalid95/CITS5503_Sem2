@@ -1,36 +1,16 @@
-# Practical Worksheet 7
+# Lab 7
 
-Version: 1.2 Date: 15/9/2018 Author: David Glance
+## Summary
 
-Date: 28/07/2024 Updated by Zhi Zhang
-
-## Learning Objectives
-
-1. Install and configure Fabric
-2. Deploy a server with nginx installed and configured by Fabric
-3. Deploy Django code using Fabric
-
-## Technologies Covered
-
-* Ubuntu
-* AWS
-* Python
-* Fabric
-
-**NOTE**: please use your Linux environment – if you do it from any other OS (e.g., Windows, Mac – some unknow issues might occur)
-
-## Background
-
-The aim of this lab is to write a program that will:
- 
-[1] Background and basics to Fabric
-
-[2] How to automatically deploy a server using Fabric
+we focused on automating the deployment of a Django web application on an EC2 instance using Fabric, ensuring a streamlined and efficient setup process. The lab involved installing and configuring Fabric, a Python-based tool for remote server management. After creating an EC2 instance, we connected to it using Fabric and performed necessary system updates and upgrades to maintain security and stability. We installed Python's virtual environment and nginx, checking if they were already installed to avoid redundancy. The script then ensured the existence of the project directory and set correct ownership permissions, followed by setting up a virtual environment and installing Django within it. The lab also involved creating a new Django project (lab) and a Django app (polls), with checks in place to avoid duplication or incomplete setups. For the nginx configuration, we set it up as a reverse proxy, forwarding traffic to the Django app running on port 8000. This configuration was only updated if there were changes from the current setup, thus avoiding unnecessary service restarts. The script further automated the creation and modification of key Django files, such as views.py and urls.py, ensuring that the correct content was in place while skipping unnecessary overwrites. Finally, the script checked whether the Django development server was already running and, if not, started it in the background using nohup. By the end of the lab, we accessed the running Django app via the public DNS of the EC2 instance, confirming a successful and automated deployment. This lab introduced the practical use of Fabric in automating server management and application deployment tasks, significantly reducing manual intervention and potential errors.
 
 ### Create an EC2 instance
 
-Using my existing code create_ec2.py to create an EC2 instance where we will test our Fabric-based installation.
-
+Using my existing code create_ec2.py from the previous lab to create an EC2 instance where we will test our Fabric-based installation.
+```bash
+python3 create_ec2.py
+```
+![Screenshot 2024-10-09 195357](https://github.com/user-attachments/assets/28e5a71a-a18c-4d9f-8db2-44548aa20e83)
 
 after the ec2 instance is created we check the console for the public dns  ec2-15-152-34-101.ap-northeast-3.compute.amazonaws.com
 ### Install and configure Fabric 
@@ -41,7 +21,7 @@ The easiest way to install fabric is to:
 pip install fabric
 ```
 
-You will need to create a config file in ~/.ssh with the contents:
+We create a config file in ~/.ssh with the contents:
 nano ~/.ssh/config
 
 ```
@@ -57,7 +37,7 @@ Host 23803313-vm2
 ![image](https://github.com/user-attachments/assets/5814b347-ab30-4b26-b232-b7b60ab680f1)
 
 
-Rely on the fabric code below to connect to you instance.
+Test using fabric code below to connect to you instance.
 
 ```python3
 python3
@@ -72,7 +52,9 @@ Linux
 
 ### Use Fabric for automation
 
-Write a python script where you first need to automate the setup of a Python 3 virtual environment, nginx and a Django app within the EC2 instance you just created. Then, you should run the Django development server on port 8000 in the background.
+i wrote a python script where i first automate the setup of a Python 3 virtual environment, nginx and a Django app within the EC2 instance just created. Then, i run the Django development server on port 8000 in the background.
+
+The  Fabric script is designed to automate the deployment of a Django web application on an EC2 instance, ensuring that each step is idempotent and safe to execute multiple times without causing errors or unintended side effects. It starts by establishing a secure connection to the EC2 instance identified by '23803313-vm2' using Fabric's Connection class. The script then performs system updates and upgrades by running apt-get update and apt-get upgrade with sudo privileges to ensure the instance has the latest packages, which is crucial for security and stability. It proceeds to install Python 3's virtual environment module and nginx if they are not already installed, checking their existence to prevent redundant installations. The script checks for the existence of the project directory /opt/wwc/mysites; if it doesn't exist, it creates it and assigns ownership to the 'ubuntu' user to prevent permission issues during subsequent operations. When setting up the Python virtual environment in /opt/wwc/mysites/myvenv, the script verifies whether it already exists to avoid unnecessary recreation. It installs Django within the virtual environment only if it hasn't been installed yet, ensuring efficient use of resources. For the Django project 'lab', the script checks if the directory and the manage.py file exist; if the directory exists but is incomplete (missing manage.py), it removes the incomplete directory to avoid conflicts and recreates the project, ensuring a clean setup. The same careful checks are applied when creating the 'polls' app; it is only created if it doesn't already exist, preventing duplication and errors. The nginx configuration is handled by reading the current configuration file and comparing it with the desired configuration; it updates the configuration and restarts the nginx service only if changes are detected, thus avoiding unnecessary restarts that could disrupt service. The script also manages the critical Django files views.py and urls.py for both the 'polls' app and the main project by comparing existing file contents with the desired code; it updates the files only if there are discrepancies, ensuring that the application code remains consistent and up-to-date without overwriting unchanged files. Finally, the script checks whether the Django development server is already running by searching for the process; if it is not running, it starts the server in the background using nohup, allowing it to continue running after the script completes, but if it is already running, it leaves it undisturbed. This comprehensive approach of checking and conditional execution ensures that the script is robust, avoids unnecessary operations, and adheres to best practices in automation and deployment, providing a reliable and efficient method to manage the application's lifecycle on the EC2 instance.
 
 
 ```python3
@@ -255,10 +237,10 @@ else:
     print("Django development server is already running. Skipping start.")
 
 ```
-The revised Fabric script is meticulously designed to automate the deployment of a Django web application on an EC2 instance, ensuring that each step is idempotent and safe to execute multiple times without causing errors or unintended side effects. It starts by establishing a secure connection to the EC2 instance identified by '23803313-vm2' using Fabric's Connection class. The script then performs system updates and upgrades by running apt-get update and apt-get upgrade with sudo privileges to ensure the instance has the latest packages, which is crucial for security and stability. It proceeds to install Python 3's virtual environment module and nginx if they are not already installed, checking their existence to prevent redundant installations. The script checks for the existence of the project directory /opt/wwc/mysites; if it doesn't exist, it creates it and assigns ownership to the 'ubuntu' user to prevent permission issues during subsequent operations. When setting up the Python virtual environment in /opt/wwc/mysites/myvenv, the script verifies whether it already exists to avoid unnecessary recreation. It installs Django within the virtual environment only if it hasn't been installed yet, ensuring efficient use of resources. For the Django project 'lab', the script checks if the directory and the manage.py file exist; if the directory exists but is incomplete (missing manage.py), it removes the incomplete directory to avoid conflicts and recreates the project, ensuring a clean setup. The same careful checks are applied when creating the 'polls' app; it is only created if it doesn't already exist, preventing duplication and errors. The nginx configuration is handled by reading the current configuration file and comparing it with the desired configuration; it updates the configuration and restarts the nginx service only if changes are detected, thus avoiding unnecessary restarts that could disrupt service. The script also manages the critical Django files views.py and urls.py for both the 'polls' app and the main project by comparing existing file contents with the desired code; it updates the files only if there are discrepancies, ensuring that the application code remains consistent and up-to-date without overwriting unchanged files. Finally, the script checks whether the Django development server is already running by searching for the process; if it is not running, it starts the server in the background using nohup, allowing it to continue running after the script completes, but if it is already running, it leaves it undisturbed. This comprehensive approach of checking and conditional execution ensures that the script is robust, avoids unnecessary operations, and adheres to best practices in automation and deployment, providing a reliable and efficient method to manage the application's lifecycle on the EC2 instance.
+
 ![image](https://github.com/user-attachments/assets/54727085-65bd-4151-9715-6a82cacfc029)
 
-From your local OS environment, access the URL: `http://15.152.34.101/polls/`, and output what you've got. 
+then From my local OS environment, i access the URL: `http://15.152.34.101/polls/` 
 
 ![image](https://github.com/user-attachments/assets/0446ec88-03d6-47ee-a4dd-3bda0c4aba13)
 
