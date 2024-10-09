@@ -218,6 +218,10 @@ apt install nginx
 
 edit `/etc/nginx/sites-enabled/default` and replace the contents of the file with
 
+```bash
+sudo nano /etc/nginx/sites-enabled/default
+```
+
 ```
 server {
   listen 80 default_server;
@@ -249,8 +253,7 @@ In your app directory: `/opt/wwc/mysites/lab`, run:
 python3 manage.py runserver 8000
 ```
 
-![image](https://github.com/user-attachments/assets/316edb75-b2e9-4b45-87d7-a6613ef7bd48)
-
+![image](https://github.com/user-attachments/assets/cbe7da26-7834-4047-b381-21c2c94054fa)
 
 we apply migrations
 ```python
