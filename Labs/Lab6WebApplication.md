@@ -1,32 +1,7 @@
 # Practical Worksheet 6
 
-Version: 1.0 Date: 12/04/2018 Author: David Glance
-
-Date: 24/07/2024 Updated by Zhi Zhang
-
-## Learning Objectives
-
-1. Create a web app using Django
-2. Implement nginx and load balance requests to it
-3. Retrieve data from DynamoDB to display in the app
-
-## Technologies Covered
-
-* Ubuntu
-* AWS
-* AWS ELB
-* RDS
-* Python/Boto scripts
-
-**NOTE**: please use your Linux environment – if you do it from any other OS (e.g., Windows, Mac – some unknow issues might occur)
-
-## Background
-
-The aim of this lab is to write a program that will:
-
-[1] Understand the basis for a web architecture that incorporates scalability and security using ELB
-
-[2] Familiarise yourself with the basics of programming using Django
+## Summary
+In this lab, I set up a Django web application on an AWS EC2 instance and configured an Application Load Balancer (ALB) for scalability and load distribution. The process included creating the EC2 instance and its associated security groups using a Python script, setting up nginx as a reverse proxy for the Django app, and deploying the app. I then created an ALB with HTTP listeners, registered my EC2 instance as a target, and configured health checks. Finally, I accessed the app via the ALB’s DNS name, ensuring that the setup works seamlessly for web traffic distribution.
 
 ## Set up an EC2 instance
 
@@ -500,83 +475,3 @@ Access the URL: http://23803313-alb-1046759913.ap-northeast-3.elb.amazonaws.com/
 
 ![image](https://github.com/user-attachments/assets/70c46249-efbb-4792-b9d8-8364b85e1c39)
 
-
-**NOTE**: When you are done, delete the instance and ALB you created.
-
-## [Unmarked] Web interface for CloudStorage application
-
-You need to create an AWS DynamoDB table copied from the local DynamoDB of the previous lab 3 as well as a copy of your AWS credentials.
-
-In views.py, add boto3 code to scan the AWS DynamoDB table. Display the results in the calling page.
-
-In Django, you can use a template to properly format a web page using supplied variables – you can do that to make the table look nice. To use a template, you need to create a folder called templates under polls and add to the TEMPLATES section of lab/settings.py
-
-```
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            'polls/templates/'
-        ],
-```
-
-In the templates directory, add a file files.html with the following contents:
-
-```
-<html>
-<head>
-    <title>Files</title>
-</head>
-<body>
-    <h1>Files </h1>
-
-
-    <ul>
-        {% for item in items %}
-          <li>{{ item.fileName }}</li>
-	{% endfor %}
-    </ul>
-
-</body>
-</html>
-```
-
-
-Finally in views.py, you can pass variables from your DynamoDB call and render the template in the following way:
-
-```
-from django.shortcuts import render
-from django.template import loader
-from django.http import HttpResponse
-import boto3
-import json
-from boto3.dynamodb.conditions import Key, Attr
-from botocore.exceptions import ClientError
-
-def index(request):
-    template = loader.get_template('files.html')
-
-    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2',
-                              aws_access_key_id='Your Access Key',
-                              aws_secret_access_key='Your Secret')
-
-    table = dynamodb.Table("UserFiles")
-
-    items = []
-    try:
-        response = table.scan()
-
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-    else:    
-        context = {'items': response['Items'] }
-
-        return HttpResponse(template.render(context, request))
-```
-
-
-You can add variables to the template and more formatting functionality to display the information correctly.
-
-Lab Assessment:
-
-A structured presentation (15%). A clear step-by-step with detailed descriptions (85%). 
