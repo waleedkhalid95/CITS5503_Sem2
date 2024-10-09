@@ -1,12 +1,12 @@
 # Lab 6: Deploying a Django Web App with Application Load Balancer
 
 ## Summary
-In this lab, I set up a Django web application on an EC2 instance and configured an Application Load Balancer (ALB) to distribute HTTP traffic between instances for scalability and high availability. The main tasks involved creating the EC2 instance and security groups, installing and configuring a Django app, setting up nginx as a reverse proxy, and configuring the ALB with health checks to ensure the application is running smoothly. By the end of the lab, I accessed the Django application through the ALB's DNS name, confirming successful load balancing and web traffic distribution.
+In this lab, I deployed a Django web application on an EC2 instance and configured an Application Load Balancer (ALB) to distribute HTTP traffic between instances. The setup ensures both scalability and high availability of the application. The key steps included creating the EC2 instance, setting up security groups to allow traffic, installing and configuring Django, and using nginx as a reverse proxy. Additionally, I created and configured the ALB to perform health checks on the instances to ensure smooth application availability. By the end of the lab, I confirmed that the Django application could be accessed through the ALB's DNS name, verifying successful traffic distribution.
 
 ## Set up an EC2 instance
 
 ### [1] Create an EC2 Instance with Ubuntu and SSH into It
-I modified the Python script used in Lab 2 to create an EC2 instance with both SSH and HTTP traffic allowed. The steps involve creating a security group, launching an instance, and connecting via SSH.
+I modified the Python script used in Lab 2 to create an EC2 instance with both SSH and HTTP traffic allowed. The security group ensures secure access to the instance for remote management (via SSH) and public HTTP access for serving the Django app.
 ```python3
 import boto3
 import os
@@ -208,7 +208,7 @@ Open the browser and enter the public IP address of the EC2 instance to verify t
 ## Setting Up Django Application
 
 ### [1] Editing Django Files
-After installing Django and creating the `polls` app, I proceeded to modify the necessary Django files to handle HTTP requests and display simple content. This involves creating views, URL patterns, and routing.
+After installing Django and creating the polls app, I proceeded to modify the necessary Django files to handle HTTP requests and display content. This step verifies that the Django app is properly handling routing and responding to requests.
 
 #### Editing `polls/views.py`
 First, I needed to create a view that returns a basic HTTP response.
@@ -291,9 +291,7 @@ This resulted in the expected "Hello, world." message from the `index()` view.
 
 ### [1] Creating an Application Load Balancer
 
-To improve scalability and availability, I created an Application Load Balancer (ALB) to distribute incoming HTTP traffic between multiple EC2 instances.
-
-I used the following Python script to create the ALB, set up a target group, register the EC2 instance as a target, and create an HTTP listener.
+To improve scalability and ensure that traffic is distributed across multiple instances, I set up an Application Load Balancer (ALB). The load balancer routes incoming requests to healthy instances, and the health checks ensure that only working instances receive traffic
 
 ```python3
 import boto3
