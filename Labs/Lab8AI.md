@@ -1,31 +1,29 @@
-# Lab 8
+# Lab 8: Hyperparameter Tuning with AWS SageMaker
 
 ## Summary
-
+In this lab, I set up and ran hyperparameter tuning jobs on AWS SageMaker. I started by installing Jupyter Notebook and setting up necessary libraries like SageMaker, pandas, and numpy. Then, I prepared an AWS SageMaker session, using an existing SageMaker role, and created an S3 bucket to store training and validation data. After downloading the bank marketing dataset from UCI's ML Repository, I processed the data, converted categorical variables into dummy variables, and split it into training, validation, and test datasets. I ensured all data was numeric by converting non-numeric values like booleans into integers. The data was then uploaded to S3 for use in the tuning job. I configured a hyperparameter tuning job for the XGBoost algorithm, set up training job definitions, and launched the tuning job. Finally, I verified the job's completion by checking the SageMaker console and reviewing the job output.
 
 ## Install and run jupyter notebooks
+To run this lab, I first installed Jupyter Notebook to create an environment where I could execute my Python scripts for hyperparameter tuning.
 ```
 pip install notebook
 python3 -m notebook
 ```
 
 ## Install ipykernel
-
-It can be installed using pip:
-
+This is needed to ensure that Jupyter Notebooks can properly handle Python environments.
 ```
 pip install ipykernel
 ```
 
-## Run hyperparameter tuning jobs
+## AWS IAM Role Setup
 
-first we log in to aws console and head over to IAM -> Role
-
-we can see that SageMakerRole exists ans we do not have permissions to set policy, so we will use the existing SageMaker Role instead of trying to create a new one
+In the AWS Console, I navigated to IAM -> Role and found the existing `SageMakerRole` which has the necessary permissions for this lab. Since I didn’t have permission to create a new role, I proceeded with this existing role.
 
 ![image](https://github.com/user-attachments/assets/c6f3c855-0ab3-4a4a-8cec-39e313f33c14)
 
-the notbook provided for the tuning job starts with installing libraries
+## Install Necessary Libraries in Jupyter Notebook
+I installed the essential libraries: SageMaker, pandas, and numpy to work with the datasets and interface with AWS.
 ```python3
 # Install SageMaker via jupyter notebook
 !pip install sagemaker
@@ -33,7 +31,8 @@ the notbook provided for the tuning job starts with installing libraries
 !pip install pandas
 !pip install numpy
 ```
-then we Prepare a SageMaker session
+## Prepare AWS SageMaker Session
+I set up an AWS SageMaker session to communicate with the SageMaker service. This involved initializing the SageMaker role, region, and bucket name for storing the datasets.
 ```python3
 import sagemaker
 import boto3
@@ -51,7 +50,8 @@ student_id = "23803313" # use your student id
 bucket = '23803313-lab8' # use <studentid-lab8> as your bucket name
 prefix = f"sagemaker/{student_id}-hpo-xgboost-dm"
 ```
-then we create an s3 bucket
+## Create S3 Bucket
+Next, I created an S3 bucket to store training and validation data. If the bucket already existed, the script handled that gracefully
 ```python3
 # Create an S3 bucket using the bucket variable above. The bucket creation is done using the region variable above.
 # Create an object into the bucket. The object is a folder and its name is the prefix variable above. 
@@ -70,20 +70,22 @@ print(f"S3 prefix '{prefix}/' created.")
 
 ![image](https://github.com/user-attachments/assets/3603c86b-bfab-4e19-a5d1-fab41410958e)
 
-then we Read and download the marketing dataset from UCI's ML Repository
+## Download and Load Dataset
+I downloaded the bank marketing dataset from UCI's ML Repository, then loaded it into a Pandas DataFrame for further processing.
 ```python3
 !wget -N https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip
 !unzip -o bank-additional.zip
-```
-
-![image](https://github.com/user-attachments/assets/df8a9261-17be-42aa-813b-8a15fc0304ee)
-
-Read the dataset into a Pandas data frame and identify categorical and numeric variables
-```python3
 data = pd.read_csv("./bank-additional/bank-additional-full.csv", sep=";")
 pd.set_option("display.max_columns", 500)  # Make sure we can see all of the columns
 pd.set_option("display.max_rows", 50)  # Keep the output on one page
 data.head()
+```
+
+![image](https://github.com/user-attachments/assets/df8a9261-17be-42aa-813b-8a15fc0304ee)
+
+## Data Preprocessing
+I identified categorical and numeric variables and processed the data by adding new indicator columns and converting categorical variables into dummy variables for modeling.
+```python3
 # Identify categorical variables
 categorical_vars = data.select_dtypes(include=['object']).columns.tolist()
 print("Categorical Variables:", categorical_vars[:4])  # Display first four
@@ -110,7 +112,7 @@ model_data.head()
 
 ![image](https://github.com/user-attachments/assets/406317e7-6758-43ef-b499-fd2fdce0ceb7)
 
-Remove the economic features and duration from our data as they would need to be forecasted with high precision to use as inputs in future predictions.
+I also removed economic variables and checked for any non-numeric values, converting boolean columns to integers as necessary.
 
 ```python3
 model_data = model_data.drop(
@@ -143,7 +145,7 @@ print("Non-numeric columns after conversion:", non_numeric_columns)
 
 ![image](https://github.com/user-attachments/assets/19786a9d-adae-491e-a205-8f3765e656c7)
 
-Split the data into training, validation and test
+## Split Data into Training, Validation, and Test Sets
 We split the dataset into training (70%), validation (20%), and test (10%) datasets and convert the datasets to an appropriate format. We will use the training and validation datasets during training. Test dataset will be used to evaluate model performance after it is deployed to an endpoint.
 
 Amazon SageMaker's XGBoost algorithm expects data in the libSVM or CSV data format. In this lab, we use the CSV format. Note that the first column must be the target variable and the CSV should not include headers. Also, notice that although repetitive it’s easier to do this after the train|validation|test split rather than before. This avoids any misalignment issues due to random reordering.
@@ -164,7 +166,8 @@ pd.concat([test_data["y_yes"], test_data.drop(["y_no", "y_yes"], axis=1)], axis=
 )
 ```
 
-Copy the file to the S3 bucket created earlier for Amazon SageMaker training to pick up.
+## Upload Data to S3
+I uploaded the processed training and validation datasets to the S3 bucket for use in SageMaker training jobs.
 
 ```python3
 boto3.Session().resource("s3").Bucket(bucket).Object(
@@ -174,7 +177,8 @@ boto3.Session().resource("s3").Bucket(bucket).Object(
     os.path.join(prefix, "validation/validation.csv")
 ).upload_file("validation.csv")
 ```
-Setup hyperparameter tuning
+## Hyperparameter Tuning Configuration
+I defined the configuration for the hyperparameter tuning job, including parameter ranges, resource limits, and tuning strategy.
 ```python3
 from time import gmtime, strftime, sleep
 
@@ -216,7 +220,8 @@ tuning_job_config = {
     "HyperParameterTuningJobObjective": {"MetricName": "validation:auc", "Type": "Maximize"},
 }
 ```
-Specify the XGBoost algorithm for subsequent tuning
+## Specify the XGBoost algorithm 
+I retrieved the latest XGBoost image from SageMaker and set up the paths for the training and validation data.
 ```python3
 from sagemaker.image_uris import retrieve
 # Use XGBoost algorithm for training
@@ -266,8 +271,8 @@ training_job_definition = {
     "StoppingCondition": {"MaxRuntimeInSeconds": 43200},
 }
 ```
-Launch the tuning job.
-
+## Launch Hyperparameter Tuning Job
+I launched the hyperparameter tuning job using the configurations set up in the previous step.
 ```pyhton3
 #Launch Hyperparameter Tuning Job
 smclient.create_hyper_parameter_tuning_job(
@@ -282,9 +287,12 @@ smclient.create_hyper_parameter_tuning_job(
 the we head over to aws console and see the tuning job in sagemaker
 ![image](https://github.com/user-attachments/assets/f0f1d6a5-2d90-4fee-98f4-f8e0db2705cf)
 
-verify the tuning job completed successfully
+## Verify Job Completion
+I verified the successful completion of the hyperparameter tuning job in the SageMaker console.
+
 ![image](https://github.com/user-attachments/assets/16e04331-f559-43c4-b898-1911b96c1cbd)
 
-check the output of the tuning job
+## Check Tuning Job Output
+I reviewed the output of the tuning job to evaluate its performance and ensure the optimal hyperparameters were identified.
 
 ![image](https://github.com/user-attachments/assets/16a98776-ea69-4802-8611-1787a51396f5)
