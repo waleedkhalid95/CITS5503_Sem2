@@ -125,7 +125,7 @@ AWS Comprehend's sentiment analysis currently supports English, Spanish, French,
 This provided sentiment classifications for each of the English texts.
 
 ### Entity Detection
-`Entities` are elements such as people, places, organizations, and dates found within a text.
+`Entities` are specific items of information in a text that represent real-world objects or concepts like people, places, organizations, dates, quantities, and other tangible things mentioned in a sentence.
 Entity detection identifies named entities like people, places, organizations, dates, and quantities within the text. We applied entity detection to the texts using AWS Comprehend.
 ```python3
 def detect_entities(text):
@@ -149,7 +149,7 @@ This function identified entities such as names, dates, and places in the Englis
 ![image](https://github.com/user-attachments/assets/1c0ef251-0962-4db3-aa05-ae12ba180759)
 
 ### Key Phrase Detection
-`Key phrases` are the important words or phrases in a text that convey the main ideas.
+`Key phrases` are the main ideas or significant expressions in a text that capture the meaning of what is being communicated. They are words or combinations of words that are meaningful or relevant.
 We used AWS Comprehend to detect key phrases within a text. Key phrases help identify the most important information in a sentence.
 ```python3
 def detect_key_phrases(text):
@@ -171,8 +171,7 @@ for text in texts:
 ![image](https://github.com/user-attachments/assets/fd5f7ad6-1526-48d3-92b6-59e2cef28b8f)
 
 ### Syntax Analysis
-`Syntax` refers to the arrangement of words in a sentence and the grammatical structure used.
-Syntax analysis identifies the grammatical structure of a sentence, tagging each word with its part of speech (noun, verb, adjective, etc.).
+`Syntax` refer to the grammatical structure of sentences—the way words are arranged and connected to convey meaning. Syntax analysis involves identifying the part of speech for each word in a sentence, such as nouns, verbs, adjectives, and so on.
 
 ```pyhton3
 def detect_syntax(text):
