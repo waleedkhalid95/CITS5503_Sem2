@@ -1,6 +1,6 @@
 ﻿<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
 
-  <h2>Labs 6-9</h2>
+  <h2>Labs 5-9</h2>
   
   <p>Student ID: 23803313</p>
   <p>Student Name: Waleed Khalid Siraj</p>
